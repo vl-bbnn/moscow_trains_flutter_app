@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "698564475493",
+    "firebase_url": "https://trains-3a75a.firebaseio.com",
+    "project_id": "trains-3a75a",
+    "storage_bucket": "trains-3a75a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:698564475493:android:e2b5bc8890a58235",
+        "android_client_info": {
+          "package_name": "xsv.ilo.trains"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "698564475493-8usm3a2j39tur5cs6gv43knavs3hm8h3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzTxoUGaU7klaujP60cQafZe-AOvedRdY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
