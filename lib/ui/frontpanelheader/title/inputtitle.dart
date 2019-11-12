@@ -28,7 +28,7 @@ class InputTitle extends StatelessWidget {
           stream: trainsBloc.searchParametersStream,
           builder: (context, parameters) {
             if (parameters.hasData) {
-              var suggestion = parameters.data[key] as Suggestion;
+              var suggestion = parameters.data[key] as Station;
               if (suggestion != null) {
                 var labeled = suggestion.label != Label.other;
                 return Row(

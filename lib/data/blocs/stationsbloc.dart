@@ -9,7 +9,7 @@ import 'package:trains/data/classes/suggestion.dart';
 enum InputType { from, to }
 
 class StationsBloc {
-  updateStation(Suggestion suggestion) {
+  updateStation(Station suggestion) {
     if (_type == InputType.from) {
       fromSuggestionSink.add(suggestion);
       _from = suggestion;
@@ -31,13 +31,13 @@ class StationsBloc {
   InputType _type;
 
   StationsBloc() {
-    _from = new Suggestion();
-    _to = new Suggestion();
+    _from = new Station();
+    _to = new Station();
     _allStations = new List<Station>();
     _userLocation = GeoPoint(0, 0);
-    _persistentSuggestions = new List<Suggestion>();
-    _typingSuggestions = new List<Suggestion>();
-    _closestSuggestion = new Suggestion();
+    _persistentSuggestions = new List<Station>();
+    _typingSuggestions = new List<Station>();
+    _closestSuggestion = new Station();
     _passedStations = new Map();
     textStream.listen((text) {
       _updateSuggestions(text);
@@ -72,7 +72,7 @@ class StationsBloc {
               station.name.toLowerCase().startsWith(text.toLowerCase());
           if (starts) {
             _typingSuggestions
-                .add(new Suggestion(station: station, text: text));
+                .add(new Station(station: station, text: text));
           }
         }
       });
@@ -93,51 +93,51 @@ class StationsBloc {
   }
 
   List<Station> _allStations;
-  List<Suggestion> _typingSuggestions;
-  List<Suggestion> _persistentSuggestions;
+  List<Station> _typingSuggestions;
+  List<Station> _persistentSuggestions;
   Map<String, DateTime> _passedStations;
-  Suggestion _from;
-  Suggestion _to;
+  Station _from;
+  Station _to;
   Timer _timer;
-  final _closestSuggestionController = BehaviorSubject<Suggestion>();
+  final _closestSuggestionController = BehaviorSubject<Station>();
 
-  Sink<Suggestion> get closestSuggestionSink =>
+  Sink<Station> get closestSuggestionSink =>
       _closestSuggestionController.sink;
 
-  Stream<Suggestion> get closestSuggestionStream =>
+  Stream<Station> get closestSuggestionStream =>
       _closestSuggestionController.stream;
 
-  Suggestion _closestSuggestion;
+  Station _closestSuggestion;
 
-  Sink<List<Suggestion>> get typingSuggestionsSink =>
+  Sink<List<Station>> get typingSuggestionsSink =>
       _typingSuggestionsController.sink;
 
-  Stream<List<Suggestion>> get typingSuggestionsStream =>
+  Stream<List<Station>> get typingSuggestionsStream =>
       _typingSuggestionsController.stream;
-  final _typingSuggestionsController = BehaviorSubject<List<Suggestion>>();
+  final _typingSuggestionsController = BehaviorSubject<List<Station>>();
 
-  Sink<List<Suggestion>> get persistentSuggestionsSink =>
+  Sink<List<Station>> get persistentSuggestionsSink =>
       _persistentSuggestionsController.sink;
 
-  Stream<List<Suggestion>> get persistentSuggestionsStream =>
+  Stream<List<Station>> get persistentSuggestionsStream =>
       _persistentSuggestionsController.stream;
-  final _persistentSuggestionsController = BehaviorSubject<List<Suggestion>>();
+  final _persistentSuggestionsController = BehaviorSubject<List<Station>>();
 
   Sink<InputType> get inputSink => _inputController.sink;
 
   Stream<InputType> get inputStream => _inputController.stream;
   final _inputController = BehaviorSubject<InputType>();
 
-  Sink<Suggestion> get fromSuggestionSink => _fromSuggestionController.sink;
+  Sink<Station> get fromSuggestionSink => _fromSuggestionController.sink;
 
-  Stream<Suggestion> get fromSuggestionStream =>
+  Stream<Station> get fromSuggestionStream =>
       _fromSuggestionController.stream;
-  final _fromSuggestionController = BehaviorSubject<Suggestion>();
+  final _fromSuggestionController = BehaviorSubject<Station>();
 
-  Sink<Suggestion> get toSuggestionSink => _toSuggestionController.sink;
+  Sink<Station> get toSuggestionSink => _toSuggestionController.sink;
 
-  Stream<Suggestion> get toSuggestionStream => _toSuggestionController.stream;
-  final _toSuggestionController = BehaviorSubject<Suggestion>();
+  Stream<Station> get toSuggestionStream => _toSuggestionController.stream;
+  final _toSuggestionController = BehaviorSubject<Station>();
 
   Sink<String> get textSink => _textController.sink;
 
@@ -191,7 +191,7 @@ class StationsBloc {
           }
         }
         if (_closestSuggestion.station != closestStation) {
-          _closestSuggestion = new Suggestion(
+          _closestSuggestion = new Station(
               station: closestStation,
               label: Label.closest,
               text: closest.toString());
@@ -216,7 +216,7 @@ class StationsBloc {
           : null;
       if (station.code != closestStationCode) {
         _persistentSuggestions
-            .add(new Suggestion(station: station, label: Label.other));
+            .add(new Station(station: station, label: Label.other));
       }
     });
     persistentSuggestionsSink.add(_persistentSuggestions);

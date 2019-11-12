@@ -20,7 +20,7 @@ class _BackPanelSearchState extends State<BackPanelSearch> {
     pageController = new PageController(initialPage: 1);
     _currentPage.sink.add(1);
     _currentPage.stream.listen((index) {
-      if (index != 1) FocusScope.of(context).detach();
+      if (index != 1) FocusScope.of(context).unfocus();
       if ((pageController.page.round() - index).abs() > 1) {
         pageController.jumpToPage(index);
       } else

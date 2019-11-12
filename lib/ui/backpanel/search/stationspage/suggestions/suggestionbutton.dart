@@ -5,7 +5,7 @@ import 'package:trains/data/src/constants.dart';
 import 'package:trains/data/src/helper.dart';
 
 class SuggestionButton extends StatelessWidget {
-  final Suggestion suggestion;
+  final Station suggestion;
 
   const SuggestionButton({Key key, @required this.suggestion})
       : super(key: key);

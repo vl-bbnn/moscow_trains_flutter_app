@@ -41,13 +41,13 @@ class TrainsBloc {
     await _fetchThread();
   }
 
-  updateFrom(Suggestion suggestion) {
+  updateFrom(Station suggestion) {
     _searchParameters[SearchParameter.from] = suggestion;
     searchParametersSink.add(_searchParameters);
     _isReadyToSearch();
   }
 
-  updateTo(Suggestion suggestion) {
+  updateTo(Station suggestion) {
     _searchParameters[SearchParameter.to] = suggestion;
     searchParametersSink.add(_searchParameters);
     _isReadyToSearch();
@@ -181,8 +181,8 @@ class TrainsBloc {
     _regularListItemsList.clear();
     _comfortListItemsList.clear();
     _expressListItemsList.clear();
-    var from = (_searchParameters[SearchParameter.from] as Suggestion).station;
-    var to = (_searchParameters[SearchParameter.to] as Suggestion).station;
+    var from = (_searchParameters[SearchParameter.from] as Station).station;
+    var to = (_searchParameters[SearchParameter.to] as Station).station;
     var dateTime = _searchParameters[SearchParameter.dateTime] as DateTime;
     var arrival = _searchParameters[SearchParameter.arrival] as bool;
     var _url =

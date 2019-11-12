@@ -4,35 +4,30 @@ import 'package:trains/data/src/constants.dart';
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Constants.BACKGROUND_DARK_GREY,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Icon(
-                Icons.train,
-                color: Constants.accentColor,
-                size: Constants.TEXT_SIZE_MAX * 2,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                "Электрички",
-                style: TextStyle(
-                  fontSize: Constants.TEXT_SIZE_MAX,
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: Center(
+            child: Text(
+              "Электрички",
+              style: TextStyle(
+                  color: Constants.WHITE,
+                  fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
-                  color: Constants.whiteHigh,
-                ),
-              ),
-            )
-          ],
+                  fontSize: 36),
+            ),
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.all(Constants.PADDING_PAGE * 2),
+          child: Container(
+            width: 85,
+            child: Image.asset(
+              "assets/ivolga.png",
+            ),
+          ),
+        )
+      ],
     );
   }
 }

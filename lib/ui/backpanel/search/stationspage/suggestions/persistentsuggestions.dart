@@ -15,7 +15,7 @@ class PersistentSuggestions extends StatelessWidget {
       child: Material(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: StreamBuilder<List<Suggestion>>(
+          child: StreamBuilder<List<Station>>(
             stream: stationsBloc.persistentSuggestionsStream,
             builder: (context, snapshot) {
               if (snapshot.hasError) return ErrorScreen();
@@ -24,7 +24,7 @@ class PersistentSuggestions extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  StreamBuilder<Suggestion>(
+                  StreamBuilder<Station>(
                       stream: stationsBloc.closestSuggestionStream,
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) return Container();

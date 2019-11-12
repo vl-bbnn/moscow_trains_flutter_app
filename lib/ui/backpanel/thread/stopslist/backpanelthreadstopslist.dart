@@ -104,10 +104,10 @@ class _BackPanelThreadStopsListState extends State<BackPanelThreadStopsList> {
         stream: trainsBloc.searchParametersStream,
         builder: (context, snapshot) {
           fromCode = snapshot.hasData
-              ? (snapshot.data[SearchParameter.from] as Suggestion).station.code
+              ? (snapshot.data[SearchParameter.from] as Station).station.code
               : null;
           toCode = snapshot.hasData
-              ? (snapshot.data[SearchParameter.to] as Suggestion).station.code
+              ? (snapshot.data[SearchParameter.to] as Station).station.code
               : null;
           _updateStationsLeft();
           return ListView(

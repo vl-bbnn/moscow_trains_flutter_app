@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trains/data/src/constants.dart';
 
 class SearchingScreen extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Center(

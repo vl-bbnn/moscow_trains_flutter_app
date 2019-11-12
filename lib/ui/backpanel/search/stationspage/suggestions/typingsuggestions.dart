@@ -8,7 +8,7 @@ class TypingSuggestions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stationsBloc = InheritedBloc.stationsOf(context);
-    return StreamBuilder<List<Suggestion>>(
+    return StreamBuilder<List<Station>>(
       stream: stationsBloc.typingSuggestionsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) return ErrorScreen();

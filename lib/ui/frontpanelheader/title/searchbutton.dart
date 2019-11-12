@@ -12,12 +12,12 @@ class SearchButton extends StatelessWidget {
       stream: trainsBloc.readyToSearchStream,
       builder: (context, ready) {
         var search = ready.hasData && ready.data;
-        if (search) FocusScope.of(context).detach();
+        if (search) FocusScope.of(context).unfocus();
         return FloatingActionButton(
           onPressed: () {
             if (search) {
               trainsBloc.fetch();
-              FocusScope.of(context).detach();
+              FocusScope.of(context).unfocus();
               uiBloc.frontPanelOpenSink.add(true);
               trainsBloc.readyToSearchSink.add(false);
             }

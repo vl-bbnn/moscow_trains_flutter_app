@@ -2,7 +2,7 @@ import 'package:trains/data/classes/station.dart';
 import 'package:trains/data/classes/suggestion.dart';
 
 class Stop {
-  Suggestion suggestion;
+  Station suggestion;
   DateTime arrival;
   DateTime departure;
 
@@ -24,7 +24,7 @@ class Stop {
     index = stop['index'];
     if (stop['departure'] != null) departure = stop['departure'].toDate();
     if (stop['arrival'] != null) arrival = stop['arrival'].toDate();
-    suggestion = new Suggestion(
+    suggestion = new Station(
         station: Station(name: stop['title'], code: stop['code']));
   }
 }

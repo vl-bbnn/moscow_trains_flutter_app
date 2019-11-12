@@ -64,7 +64,7 @@ class BackPanelStop extends StatelessWidget {
           ),
         ),
         Expanded(
-            child: StreamBuilder<Suggestion>(
+            child: StreamBuilder<Station>(
                 stream: stationsBloc.closestSuggestionStream,
                 builder: (context, snapshot) {
                   final closest = snapshot.hasData

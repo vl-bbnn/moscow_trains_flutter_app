@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:trains/data/blocs/Inheritedbloc.dart';
-import 'package:trains/data/blocs/trainsbloc.dart';
 import 'package:trains/data/src/constants.dart';
 
 enum SearchModeButtonType { history, stations, dateTime }
