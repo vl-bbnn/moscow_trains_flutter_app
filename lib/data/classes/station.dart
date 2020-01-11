@@ -3,27 +3,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Station {
   String code;
   String name;
-  String direction;
-  String city;
-  String cityCode;
+  String old;
+  String subtitle;
+  final keywords = List<String>();
+  final transitList = List<Map<String, Object>>();
   GeoPoint location;
 
   Station.fromDocumentSnapshot(DocumentSnapshot doc) {
     code = doc.documentID;
-    name = _shorterName(doc['name']);
+    name = doc['name'];
+    old = doc['old'] ?? " ";
+    if (doc['keywords'] != null) keywords.addAll(List.from(doc['keywords']));
     location = doc['coordinates'];
-  }
-
-  Station({String name, this.code}) {
-    this.name = _shorterName(name);
-  }
-
-  String _shorterName(String name) {
-    return name.replaceAll(' (Ленинградский вокзал)', '');
-  }
-
-  Station.fromDynamic(dynamic segmentChild) {
-    code = segmentChild['code'];
-    name = _shorterName(segmentChild['title']);
+    subtitle = doc['subtitle'] ?? " ";
+    if (doc['transit'] != null) {
+      transitList.addAll(List.from(doc['transit']
+          .map((transit) => {'line': transit['line'], 'time': transit['time']})
+          .toList()));
+    }
   }
 }

@@ -32,6 +32,15 @@ class Constants {
   static const METRO9 = Color(0xFFA1A2A3);
   static const METRO10 = Color(0xFFB4D445);
   static const METRO14 = Color(0xFFFFA8AF);
+  static const D1= Color(0xFFED9F2D);
+  static const D2 = Color(0xFFDF477C);
+  static const D3 = Color(0xFFE15D29);
+  static const D4 = Color(0xFF3CB183);
+  static const D5 = Color(0xFF6CB644);
+  static const KURSK = Color(0xFF00A49A);
+  static const LENINGRAD = Color(0xFF853892);
+  static const YAROSLAVL = Color(0xFF007ABD);
+  static const KAZAN = Color(0xFF17B45D);  
 
   static const PADDING_SMALL = 2.0;
   static const PADDING_REGULAR = 8.0;
@@ -39,14 +48,14 @@ class Constants {
   static const PADDING_PAGE = 48.0;
   static const PADDING_BIG = 24.0;
 
-  static const STATIONCARD_HEIGHT = 125.0;
-  static const STATIONCARD_WIDTH = 250.0;
+  static const STATIONCARD_HEIGHT = 100.0;
+  static const STATIONCARD_WIDTH = 225.0;
   static const DATECARD_WIDTH = 60.0;
   static const DATECARD_HEIGHT = 120.0;
   static const TIMECARD_WIDTH = 50.0;
   static const TIMECARD_HEIGHT = 75.0;
-  static const TRAINCARD_HEIGHT = 135.0;
-  static const TRAINCARD_WIDTH = 300.0;
+  static const TRAINCARD_HEIGHT = 90.0;
+  static const TRAINCARD_WIDTH = 325.0;
   
   static const WARNINGAFTER = 25;
 

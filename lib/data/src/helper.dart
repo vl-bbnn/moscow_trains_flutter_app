@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trains/data/classes/suggestion.dart';
-import 'package:trains/newData/classes/train.dart';
+import 'package:trains/data/classes/train.dart';
 
 class Helper {
   static Map<String, String> minutesToText(int minutesTotal) {
@@ -189,21 +187,6 @@ class Helper {
     return [stops.toString() + " " + text, text];
   }
 
-  static IconData suggestionIconData(Label label) {
-    switch (label) {
-      case Label.closest:
-        return Icons.location_on;
-      case Label.home:
-        return Icons.home;
-      case Label.work:
-        return Icons.work;
-      case Label.custom:
-        return Icons.edit;
-      default:
-        return Icons.close;
-    }
-  }
-
   static String trainTypeName(TrainType type) {
     switch (type) {
       case TrainType.comfort:
@@ -222,6 +205,6 @@ class Helper {
     // print(DateFormat("Hm").format(target) +
     //     " - " +
     //     DateFormat("Hm").format(fact));
-    return (target.difference(fact).inSeconds / 60).round();
+    return (target.difference(fact).inSeconds / 60).ceil();
   }
 }

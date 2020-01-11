@@ -1,12 +1,12 @@
-import 'package:trains/data/classes/pause.dart';
 import 'package:trains/data/classes/train.dart';
+import 'package:trains/data/classes/warning.dart';
 
-enum ListItemType { train, pause }
+enum ListItemType { train, warning }
 
 class ListItem {
   final ListItemType type;
   final Train train;
-  final Pause pause;
+  final Warning warning;
 
-  ListItem({this.type, this.train, this.pause});
+  ListItem({this.type, this.train, this.warning});
 }

@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 
-enum TrainType { suburban, lastm, last }
+enum TrainType { regular, comfort, express }
 
 class Train {
   DateTime departure = DateTime.now();
@@ -11,11 +10,13 @@ class Train {
   String from;
   String to;
   bool isLast = false;
-  bool isGoingFromFirstStation = false;
-  bool isGoingToLastStation = false;
+  bool goingFromSelected = false;
+  bool goingToSelected = false;
+  int timeDiff = 0;
 
-  Train(this.type, this.departure, this.arrival, this.price, this.uid,
-      this.from, this.to);
+  setTimeDiff(int newDiff){
+    
+  }
 
   Train.fromDynamic(dynamic object) {
     String _title = object['title'];
@@ -28,17 +29,17 @@ class Train {
     switch (object['train_type']) {
       case 'last':
         {
-          type = TrainType.last;
+          type = TrainType.express;
           break;
         }
       case 'lastm':
         {
-          type = TrainType.lastm;
+          type = TrainType.comfort;
           break;
         }
       default:
         {
-          type = TrainType.suburban;
+          type = TrainType.regular;
           break;
         }
     }
