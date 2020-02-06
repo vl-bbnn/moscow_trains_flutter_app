@@ -1,11 +1,11 @@
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/data/classes/trainclass.dart';
+import 'package:trains/data/classes/trainclassfilter.dart';
 
 class TrainClassesBloc {
   TrainClassesBloc({Stream<List<Train>> trains}) {
-    excludedTypes.add(List<TrainType>());
-    classes.add(List<TrainClass>());
+    excludedTypes.add(List<TrainClass>());
+    classes.add(List<TrainClassFilter>());
     trains.listen((list) => init(list));
   }
 
@@ -13,18 +13,18 @@ class TrainClassesBloc {
     if (trains.isEmpty)
       reset();
     else {
-      final map = Map<TrainType, int>();
+      final map = Map<TrainClass, int>();
       trains.forEach((train) {
-        if (!map.containsKey(train.type)) {
-          map[train.type] = train.price;
+        if (!map.containsKey(train.trainClass)) {
+          map[train.trainClass] = train.price;
         }
       });
-      final list = List<TrainClass>();
+      final list = List<TrainClassFilter>();
       map.forEach((type, price) {
         final oldClasses = classes.value
-            .where((trainClass) => trainClass.type == type)
+            .where((trainClass) => trainClass.trainClass == type)
             .toList();
-        final newClass = TrainClass(type: type, price: price);
+        final newClass = TrainClassFilter(trainClass: type, price: price);
         newClass.selected =
             oldClasses.isNotEmpty ? oldClasses.first.selected : true;
         list.add(newClass);
@@ -34,29 +34,29 @@ class TrainClassesBloc {
   }
 
   reset() {
-    excludedTypes.add(List<TrainType>());
-    classes.add(List<TrainClass>());
+    excludedTypes.add(List<TrainClass>());
+    classes.add(List<TrainClassFilter>());
   }
 
-  update(TrainType type) {
+  update(TrainClass type) {
     final types = excludedTypes.value;
     final currentClasses = classes.value;
     if (types.contains(type)) {
       types.remove(type);
-      currentClasses.firstWhere((trainClass) => trainClass.type == type).selected =
+      currentClasses.firstWhere((trainClass) => trainClass.trainClass == type).selected =
           true;
     } else if (types.length < currentClasses.length - 1) {
       types.add(type);
-      currentClasses.firstWhere((trainClass) => trainClass.type == type).selected =
+      currentClasses.firstWhere((trainClass) => trainClass.trainClass == type).selected =
           false;
     }
     excludedTypes.add(types);
     classes.add(currentClasses);
   }
 
-  final classes = BehaviorSubject<List<TrainClass>>();
+  final classes = BehaviorSubject<List<TrainClassFilter>>();
 
-  final excludedTypes = BehaviorSubject<List<TrainType>>();
+  final excludedTypes = BehaviorSubject<List<TrainClass>>();
 
   close() {
     classes.close();

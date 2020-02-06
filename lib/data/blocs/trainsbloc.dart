@@ -1,104 +1,121 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/inputtypebloc.dart';
+import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/data/src/constants.dart';
+import 'package:trains/data/classes/trainclassfilter.dart';
 import 'package:trains/data/src/helper.dart';
 
-enum Status { searching, found, notFound }
-
 class TrainsBloc {
-  final elementHeight =
-      Constants.TRAINCARD_HEIGHT + Constants.PADDING_REGULAR * 2;
-  final offset = BehaviorSubject<double>();
-
-  var scroll = ScrollController();
-
-  final BehaviorSubject<DateTime> targetDateTime;
-  final BehaviorSubject<Input> reqType;
+  final BehaviorSubject<DateTime> dateTime;
+  final BehaviorSubject<bool> shouldUpdateTime;
+  final BehaviorSubject<Status> status;
   final BehaviorSubject<List<Train>> allTrains;
-  final BehaviorSubject<List<TrainType>> deselectedTypes;
+  final BehaviorSubject<Input> type;
 
+  final classes = BehaviorSubject.seeded(List<TrainClassFilter>());
+  final excludedTypes = BehaviorSubject.seeded(List<TrainClass>());
   final results = BehaviorSubject.seeded(List<Train>());
-  final status = BehaviorSubject.seeded(Status.notFound);
+  var trains = List<Train>();
+  var oldDateTime = DateTime.now();
 
   TrainsBloc(
-      {this.allTrains,
-      this.deselectedTypes,
-      this.targetDateTime,
-      this.reqType}) {
+      {@required this.shouldUpdateTime,
+      @required this.status,
+      @required this.allTrains,
+      @required this.dateTime,
+      @required this.type}) {
     status.listen((newStatus) {
+      print(newStatus);
       if (newStatus != Status.found) results.add(List<Train>());
     });
-    status.add(Status.notFound);
-    deselectedTypes.listen((_) {
-      _updateResults();
-      reset();
-    });
     allTrains.listen((_) {
+      // print("allTrains update: Trimming full list");
+      _trimTrains(allTrains.value);
+    });
+    classes.listen((_) {
       _updateResults();
-      reset();
     });
-    targetDateTime.listen((_) {
-      _updateTimesAtStart();
+    dateTime.listen((_) {
+      if (shouldUpdateTime.value) {
+        // print("dateTime update: Trimming old list");
+        _trimTrains(trains);
+      }
+      oldDateTime = dateTime.value;
     });
-    reset();
   }
 
-  _updateTimesAtStart() {
-    final list = allTrains.value;
-    var newFirst = 0;
-    if (list.isNotEmpty) {
-      list.sublist(0, min(3, list.length)).asMap().forEach((index, train) {
-        if (index <= newFirst) {
-          switch (reqType.value) {
-            case Input.departure:
-              final diff =
-                  Helper.timeDiffInMins(train.departure, targetDateTime.value);
-              if (diff < 0)
-                newFirst = index + 1;
-              else
-                train.timeDiff = diff;
-              break;
-            case Input.arrival:
-              final diff =
-                  Helper.timeDiffInMins(train.arrival, targetDateTime.value);
-              if (diff > 0)
-                newFirst = index + 1;
-              else
-                train.timeDiff = diff;
-              break;
-          }
-        }
-      });
-      if (newFirst >= list.length) {
-        allTrains.add(List<Train>());
-        status.add(Status.notFound);
-      } else if (newFirst == 0)
-        allTrains.add(list);
-      else {
-        allTrains.add(list.sublist(newFirst));
-      }
+  trim() {
+    if (dateTime.value.isAfter(oldDateTime)) {
+      // print("dateTime update: Trimming old list");
+      _trimTrains(trains);
+    } else {
+      // print("dateTime update: Trimming full list");
+      _trimTrains(allTrains.value);
     }
+    oldDateTime = dateTime.value;
+  }
+
+  _trimTrains(List<Train> list) {
+    // print("trim trains");
+    final now = DateTime.now();
+    switch (type.value) {
+      case Input.departure:
+        {
+          if (list.first.departure.isBefore(dateTime.value)) {
+            final index = list
+                .indexWhere((train) => train.departure.isAfter(dateTime.value));
+            if (index >= 0) {
+              final newList = list.sublist(index);
+              trains = newList;
+            } else
+              status.add(Status.notFound);
+          } else
+            trains = list;
+          break;
+        }
+      case Input.arrival:
+        {
+          if (list.first.departure.isBefore(now) ||
+              list.last.arrival.isAfter(dateTime.value)) {
+            final startIndex =
+                list.indexWhere((train) => train.departure.isAfter(now));
+            final endIndex = list.lastIndexWhere(
+                (train) => train.arrival.isBefore(dateTime.value));
+            if (startIndex >= 0 && endIndex >= 0 && startIndex <= endIndex) {
+              final newList = list.sublist(startIndex, endIndex).reversed;
+              trains = newList;
+            } else
+              status.add(Status.notFound);
+          } else
+            trains = list;
+          break;
+        }
+    }
+    _initClasses();
+    _updateResults();
   }
 
   _setWarnings() {
+    // print("set warnings");
     final list = results.value;
     list.asMap().forEach((index, train) {
-      switch (reqType.value) {
+      switch (type.value) {
         case Input.departure:
-          final target = index == 0
-              ? targetDateTime.value
-              : list.elementAt(index - 1).departure;
-          train.timeDiff = Helper.timeDiffInMins(train.departure, target);
+          train.timeDiffToPrevTrain = index > 0
+              ? Helper.timeDiffInMins(
+                  train.departure, list.elementAt(index - 1).departure)
+              : 0;
+          train.timeDiffToTarget =
+              Helper.timeDiffInMins(train.departure, dateTime.value);
           break;
         case Input.arrival:
-          final target = index == 0
-              ? targetDateTime.value
-              : list.elementAt(index - 1).arrival;
-          train.timeDiff = Helper.timeDiffInMins(train.arrival, target);
+          train.timeDiffToPrevTrain = index > 0
+              ? Helper.timeDiffInMins(
+                  train.arrival, list.elementAt(index - 1).arrival)
+              : 0;
+          train.timeDiffToTarget =
+              Helper.timeDiffInMins(train.arrival, dateTime.value);
           break;
       }
       if (index == list.length - 1) train.isLast = true;
@@ -107,52 +124,64 @@ class TrainsBloc {
   }
 
   _updateResults() {
-    results.add(allTrains.value
-        .where((train) => !deselectedTypes.value.contains(train.type))
-        .toList());
-    _setWarnings();
-    if (results.value.isNotEmpty) status.add(Status.found);
+    // print("update results");
+    final newList = trains
+        .where((train) => !excludedTypes.value.contains(train.trainClass))
+        .toList();
+    if (newList.isNotEmpty) {
+      results.add(newList);
+      _setWarnings();
+      if (status.value != Status.found) status.add(Status.found);
+    } else
+      status.add(Status.notFound);
   }
 
-  round() {
-    final maxOffset = elementHeight * results.value.length;
-    var newOffset = (scroll.offset / elementHeight).round() * elementHeight;
-    if (newOffset > maxOffset) newOffset = maxOffset;
-    if (scroll.hasClients)
-      scrollToOffset(newOffset);
-    else if (!scroll.hasClients) offset.add(newOffset);
-  }
-
-  jumpToOffset(double newOffset) {
-    if (newOffset >= 0 && newOffset <= scroll.position.maxScrollExtent) {
-      scroll.jumpTo(newOffset);
-      offset.add(scroll.offset);
-    }
-  }
-
-  scrollToOffset(double newOffset) {
-    if (newOffset >= 0 && newOffset <= scroll.position.maxScrollExtent)
-      Future.delayed(const Duration(milliseconds: 20), () {}).then((s) {
-        scroll.animateTo(newOffset,
-            duration: Duration(milliseconds: 500), curve: Curves.easeIn);
+  _initClasses() {
+    // print("init classes");
+    if (trains.isEmpty)
+      resetClasses();
+    else {
+      final map = Map<TrainClass, int>();
+      trains.forEach((train) {
+        if (!map.containsKey(train.trainClass)) {
+          map[train.trainClass] = train.price;
+        }
       });
-  }
-
-  reset() {
-    if (results.value.isNotEmpty) {
-      final newOffset = 0.0;
-      if (scroll.hasClients)
-        scrollToOffset(newOffset);
-      else if (!scroll.hasClients) offset.add(newOffset);
+      final list = List<TrainClassFilter>();
+      map.forEach((type, price) {
+        final oldClasses = classes.value
+            .where((trainClass) => trainClass.trainClass == type)
+            .toList();
+        final newClass = TrainClassFilter(trainClass: type, price: price);
+        newClass.selected =
+            oldClasses.isNotEmpty ? oldClasses.first.selected : true;
+        list.add(newClass);
+      });
+      classes.add(list);
     }
   }
 
-  rebuilt() {
-    scroll?.dispose();
-    scroll = ScrollController(initialScrollOffset: offset.value ?? 0.0);
-    scroll.addListener(() {
-      offset.add(scroll.offset);
-    });
+  resetClasses() {
+    excludedTypes.add(List<TrainClass>());
+    classes.add(List<TrainClassFilter>());
+  }
+
+  updateClass(TrainClass type) {
+    final types = excludedTypes.value;
+    final currentClasses = classes.value;
+    if (types.contains(type)) {
+      types.remove(type);
+      currentClasses
+          .firstWhere((trainClass) => trainClass.trainClass == type)
+          .selected = true;
+    } else if (types.length < currentClasses.length - 1) {
+      types.add(type);
+      currentClasses
+          .firstWhere((trainClass) => trainClass.trainClass == type)
+          .selected = false;
+    }
+    excludedTypes.add(types);
+    classes.add(currentClasses);
   }
 
   close() {

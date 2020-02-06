@@ -1,179 +1,184 @@
 import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:trains/data/src/constants.dart';
-import 'package:trains/data/src/helper.dart';
-
-enum DateTimeType { Hours, Minutes, Dates }
 
 class DateTimeBloc {
-  var periodicTimer;
-  var oneTimeTimer;
-  var elementWidth = 0.0;
-  var elementHeight = 0.0;
+  var _datesUpdater;
+  var _timeUpdater;
+  var _minTimeOffset = 0.0;
+  final _minutesPerStep = 15;
+  var _oldHours = 0;
+  var _oldMinutes = 0;
+  final timeWidth = BehaviorSubject.seeded(0.0);
+  final timePercent = BehaviorSubject.seeded(0.0);
+  final shouldUpdateTime = BehaviorSubject.seeded(true);
+  final minDatesOffset = Constants.DATE_WIDTH + 20;
+  final datesOffset = BehaviorSubject.seeded(0.0);
+  final datesList = BehaviorSubject.seeded(List.generate(
+      90, (index) => DateTime.now().add(Duration(days: index + 1))));
+  final todayIsSelected = BehaviorSubject.seeded(true);
+  var datesScroll = ScrollController(keepScrollOffset: true);
+  final dateChangesByTime = BehaviorSubject.seeded(true);
 
-  final nextMonth = BehaviorSubject<int>();
-  final prevMonth = BehaviorSubject<int>();
+  final void Function(int, int) updateTime;
+  final void Function(DateTime) updateDate;
 
-  final index = BehaviorSubject<int>();
-  final offset = BehaviorSubject<double>();
-  final selected = BehaviorSubject<dynamic>();
-  final list = BehaviorSubject<List<dynamic>>();
-  final timerShouldUpdate = BehaviorSubject<bool>();
+  DateTimeBloc({@required this.updateDate, @required this.updateTime}) {
+    // dateChangesByTime.listen((event) => print(event.toString()));
 
-  var scroll = ScrollController(keepScrollOffset: true);
-
-  final type;
-  final void Function(DateTimeType, dynamic) updateSearch;
-
-  DateTimeBloc({@required this.updateSearch, @required this.type}) {
-    final now = DateTime.now();
-    switch (type) {
-      case DateTimeType.Hours:
-        list.add(List.generate(24, (index) => index));
-        elementWidth = Constants.TIMECARD_WIDTH;
-        elementHeight = Constants.TIMECARD_HEIGHT;
-        break;
-      case DateTimeType.Minutes:
-        list.add(List.generate(12, (index) => index * 5));
-        elementWidth = Constants.TIMECARD_WIDTH;
-        elementHeight = Constants.TIMECARD_HEIGHT;
-        break;
-      case DateTimeType.Dates:
-        list.add(List.generate(90, (index) => now.add(Duration(days: index))));
-        elementWidth = Constants.DATECARD_WIDTH;
-        elementHeight = Constants.DATECARD_HEIGHT;
-        break;
-    }
-    index.listen((newIndex) {
-      selected.add(list.value.elementAt(newIndex));
-      if (type == DateTimeType.Dates) _updateMonthIndexes();
+    resetDate();
+    setDatesUpdater();
+    timeWidth.listen((width) {
+      // print("Time Selector Width: " + width.toString());
+      _minTimeOffset = width / (24 * 60 / _minutesPerStep);
+      if (shouldUpdateTime.value)
+        resetTime();
+      else
+        selectTime(timePercent.value * width);
     });
-    scroll.addListener(() {
-      offset.add(scroll.offset);
+    resetTime();
+    _timeUpdater = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      final now = DateTime.now();
+      if (shouldUpdateTime.value &&
+          (now.hour != _oldHours || now.minute != _oldMinutes)) resetTime();
     });
-    nextMonth.add(-1);
-    prevMonth.add(-1);
-    reset();
-    _timer();
-    timerShouldUpdate.add(true);
   }
 
-  update(int newIndex) {
-    index.add(newIndex);
-    final newValue = list.value.elementAt(newIndex);
-    updateSearch(type, newValue);
+  selectDate() {
+    final newIndex = (datesScroll.offset / minDatesOffset).round();
+    final newDate =
+        newIndex > 0 ? datesList.value.elementAt(newIndex - 1) : DateTime.now();
+    updateDate(newDate);
   }
 
-  scrollToIndex(int newIndex) {
-    var correctedIndex = newIndex;
-    if (correctedIndex < 0) {
-      correctedIndex = 0;
-    } else if (correctedIndex >= list.value.length) {
-      correctedIndex = list.value.length - 1;
+  Future<void> roundDateSelector() async {
+    final newOffset =
+        (datesScroll.offset / minDatesOffset).round() * minDatesOffset;
+    if (datesScroll.hasClients) await scrollToOffsetDateSelector(newOffset);
+    if (!datesScroll.hasClients) datesOffset.add(newOffset);
+    selectDate();
+  }
+
+  jumpToOffsetDateSelector(double newOffset) {
+    if (newOffset >= 0 && newOffset <= datesScroll.position.maxScrollExtent) {
+      datesScroll.jumpTo(newOffset);
+      datesOffset.add(datesScroll.offset);
+      selectDate();
     }
-    index.add(correctedIndex);
-    final offset =
-        correctedIndex * (elementWidth + Constants.PADDING_REGULAR * 2);
-    scrollToOffset(offset);
   }
 
-  jumpToOffset(double newOffset) {
-    if (newOffset >= 0 && newOffset <= scroll.position.maxScrollExtent)
-      scroll.jumpTo(newOffset);
-  }
-
-  scrollToOffset(double newOffset) {
-    if (newOffset >= 0 && newOffset <= scroll.position.maxScrollExtent)
-      Future.delayed(const Duration(milliseconds: 20), () {}).then((s) {
-        scroll.animateTo(newOffset,
+  Future<void> scrollToOffsetDateSelector(double newOffset) async {
+    if (newOffset >= 0 && newOffset <= datesScroll.position.maxScrollExtent)
+      await Future.delayed(const Duration(milliseconds: 20), () {}).then((s) {
+        datesScroll.animateTo(newOffset,
             duration: Duration(milliseconds: 300), curve: Curves.easeIn);
       });
   }
 
-  reset() {
+  resetDate() {
     final now = DateTime.now();
-    var newIndex = 0;
-    var newOffset = 0.0;
-    switch (type) {
-      case DateTimeType.Hours:
-        newIndex = now.hour;
-        updateSearch(type, now.hour);
-        index.add(newIndex);
-        newOffset = newIndex * (elementWidth + Constants.PADDING_REGULAR * 2);
-        if (scroll.hasClients) scrollToIndex(newIndex);
-        break;
-      case DateTimeType.Minutes:
-        updateSearch(type, now.minute);
-        selected.add(now.minute);
-        newOffset =
-            (now.minute / 5) * (elementWidth + Constants.PADDING_REGULAR * 2);
-        if (scroll.hasClients) scrollToOffset(newOffset);
-        break;
-      case DateTimeType.Dates:
-        updateSearch(type, DateTime.now());
-        if (!Helper.isToday(list.value.first)) list.value.removeAt(0);
-        if (scroll.hasClients)
-          scrollToIndex(0);
-        else {
-          index.add(0);
-        }
+    updateDate(now);
+    if (datesScroll.hasClients)
+      scrollToOffsetDateSelector(0);
+    else if (!datesScroll.hasClients) datesOffset.add(0);
+    todayIsSelected.add(true);
+  }
+
+  rebuiltDateSelector() {
+    datesScroll?.dispose();
+    datesScroll =
+        ScrollController(initialScrollOffset: datesOffset.value ?? 0.0);
+    datesScroll.addListener(() {
+      datesOffset.add(datesScroll.offset);
+    });
+  }
+
+  _updateDatesList() {
+    final now = DateTime.now();
+    if (now.day == datesList.value.first.day) {
+      datesList.value.removeAt(0);
+      if (todayIsSelected.value)
+        resetDate();
+      else {
+        final newOffset = datesOffset.value - minDatesOffset;
+        if (datesScroll.hasClients)
+          scrollToOffsetDateSelector(newOffset);
+        else if (!datesScroll.hasClients) datesOffset.add(newOffset);
+      }
     }
-    if (!scroll.hasClients) offset.add(newOffset);
-    timerShouldUpdate.add(true);
   }
 
-  rebuilt() {
-    scroll?.dispose();
-    scroll = ScrollController(initialScrollOffset: offset.value ?? 0.0);
-    scroll.addListener(() {
-      offset.add(scroll.offset);
-    });
+  void setDatesUpdater() {
+    final now = DateTime.now();
+    _updateDatesList();
+    final seconds =
+        (23 - now.hour) * 3600 + (60 - now.minute) * 60 + 60 - now.second;
+    print(seconds.toString() + " left till tomorrow");
+    _datesUpdater?.cancel();
+    _datesUpdater =
+        Future.delayed(Duration(seconds: seconds), _updateDatesList());
   }
 
-  void _timer() {
-    var seconds = 60 - DateTime.now().second;
-    oneTimeTimer = Future.delayed(Duration(seconds: seconds), () {
-      if (timerShouldUpdate.value) reset();
-      periodicTimer = Timer.periodic(Duration(minutes: 1), (Timer t) {
-        if (timerShouldUpdate.value) reset();
-      });
-    });
+  _updateTime(hours, minutes) {
+    if (hours != _oldHours || minutes != _oldMinutes) {
+      updateTime(hours, minutes);
+      _oldHours = hours;
+      _oldMinutes = minutes;
+    }
   }
 
-  _updateMonthIndexes() {
-    final nextIndex = list.value.sublist(index.value).indexWhere((dateTime) {
-      if (dateTime == null) return false;
-      return dateTime.month == selected.value.month + 1 ||
-          dateTime.month == (selected.value.month + 1) % 12;
-    });
-    if (nextIndex >= 0)
-      nextMonth.add(nextIndex + index.value);
-    else
-      nextMonth.add(-1);
-    final prevIndex =
-        list.value.sublist(0, index.value + 1).indexWhere((dateTime) {
-      if (dateTime == null) return false;
-      return dateTime.month + 1 == selected.value.month ||
-          (dateTime.month + 1) % 12 == selected.value.month;
-    });
-    if (prevIndex >= 0)
-      prevMonth.add(prevIndex);
-    else
-      prevMonth.add(-1);
+  selectTime(newOffset) {
+    if (newOffset >= 0 &&
+        newOffset <= timeWidth.value &&
+        timeWidth.value != 0 &&
+        _minTimeOffset != 0) {
+      final correctedOffset =
+          (newOffset / _minTimeOffset).round() * _minTimeOffset;
+      timePercent.add(correctedOffset / timeWidth.value);
+      if (timePercent.value == 1.0) {
+        if (dateChangesByTime.value) {
+          dateChangesByTime.add(false);
+          scrollToOffsetDateSelector(datesOffset.value + minDatesOffset);
+          _updateTime(24, 0);
+        } else
+          _updateTime(0, 0);
+      } else {
+        final newValue = timePercent.value * 24;
+        final hours = newValue.floor();
+        final minutes = ((newValue - hours) * (60 / _minutesPerStep)).floor() *
+            _minutesPerStep;
+        _updateTime(hours, minutes);
+      }
+    }
+  }
+
+  resetTime() {
+    final now = DateTime.now();
+    if (_minTimeOffset != 0) {
+      final newOffset = (now.hour * 60 / _minutesPerStep +
+              (now.minute / _minutesPerStep).round()) *
+          _minTimeOffset;
+      selectTime(newOffset);
+    }
+    _updateTime(now.hour, now.minute);
+    shouldUpdateTime.add(true);
+    // print(dateChangesByTime.value);
+    if (!dateChangesByTime.value) {
+      resetDate();
+    }
+    dateChangesByTime.add(true);
   }
 
   close() {
-    list.close();
-    selected.close();
-    scroll.dispose();
-    offset.close();
-    index.close();
-    periodicTimer?.cancel();
-    oneTimeTimer?.cancel();
-    timerShouldUpdate.close();
-    nextMonth.close();
-    prevMonth.close();
+    datesList.close();
+    datesScroll.dispose();
+    datesOffset.close();
+    _datesUpdater?.cancel();
+    dateChangesByTime.close();
+    timeWidth.close();
+    _timeUpdater?.cancel();
+    shouldUpdateTime.close();
+    timePercent.close();
   }
 }

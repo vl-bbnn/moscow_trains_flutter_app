@@ -29,10 +29,6 @@ class Request {
       if (response.statusCode == 200) {
         (json.decode(response.body) as List<dynamic>).forEach((jsonListItem) {
           final train = Train.fromDynamic(jsonListItem);
-          train.goingFromSelected =
-              train.from.toLowerCase() == fromStation.name.toLowerCase();
-          train.goingToSelected =
-              train.to.toLowerCase() == toStation.name.toLowerCase();
           list.add(train);
         });
       }

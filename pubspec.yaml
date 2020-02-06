@@ -4,7 +4,7 @@ description: Trains schedule
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.5.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -15,34 +15,54 @@ dependencies:
   http: ^0.12.0+2
   intl: ^0.16.0
   rxdart: ^0.22.6
+  flutter_svg: ^0.15.0
+  sliding_up_panel: ^1.0.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: "^0.7.4"
+  flutter_launcher_name: "^0.0.1"
+  
+flutter_launcher_name:
+  name: "Электрички"
 
 flutter_icons:
   ios: true
   android: true
-  image_path: "assets/icon.png"
-  image_path_ios: "assets/icon-ios.png"
-  adaptive_icon_background: "assets/background.png"
-  adaptive_icon_foreground: "assets/foreground.png"
+  image_path: "assets/icons/icon.png"
+  image_path_ios: "assets/icons/icon-ios.png"
+  adaptive_icon_background: "assets/icons/background.png"
+  adaptive_icon_foreground: "assets/icons/foreground.png"
 
 flutter:
+  
+  assets:
+  - assets/transitLines/m1.svg
+  - assets/transitLines/m5.svg
+  - assets/transitLines/m9.svg
+  - assets/transitLines/m10.svg
+  - assets/transitLines/m14-back.svg
+  - assets/transitLines/m14-fore.svg
+  - assets/transitLines/ka.svg
+  - assets/transitLines/ku.svg
+  - assets/transitLines/ya.svg
+  - assets/trainClasses/express.svg
+  - assets/trainClasses/express-de.svg
+  - assets/trainClasses/standart.svg
+  - assets/trainClasses/standart-de.svg
+  - assets/trainClasses/comfort.svg
+  - assets/trainClasses/comfort-de.svg
+  - assets/trainClasses/d2.svg
+  - assets/trainClasses/d2-de.svg
+  - assets/trainClasses/d3.svg
+  - assets/trainClasses/d3-de.svg
+
   fonts:
-  - family:  MyArrows
+  - family: Moscow Sans
     fonts:
-      - asset: fonts/MyArrows.ttf
-  - family:  MyTypes
-    fonts:
-      - asset: fonts/MyTypes.ttf
-  - family:  MyTransit
-    fonts:
-      - asset: fonts/MyTransit.ttf
-  - family:  MyIcons
-    fonts:
-      - asset: fonts/MyIcons.ttf
+      - asset: fonts/Moscow Sans/Moscow Sans.ttf
   - family: Montserrat
     fonts:
       - asset: fonts/Montserrat/Montserrat-Regular.ttf
@@ -52,12 +72,14 @@ flutter:
         weight: 600
       - asset: fonts/Montserrat/Montserrat-Bold.ttf
         weight: 700
-  - family: LexendDeca
+  - family: PT Root UI
     fonts:
-      - asset: fonts/LexendDeca/LexendDeca-Regular.ttf
+      - asset: fonts/PT Root UI/PT Root UI-Light.ttf
+        weight: 300
+      - asset: fonts/PT Root UI/PT Root UI-Regular.ttf
+      - asset: fonts/PT Root UI/PT Root UI-Medium.ttf
+        weight: 500
+      - asset: fonts/PT Root UI/PT Root UI-Bold.ttf
         weight: 700
-  - family: MoscowSans
-    fonts:
-      - asset: fonts/MoscowSans.ttf
   
   uses-material-design: true

@@ -56,28 +56,28 @@ class Helper {
     };
   }
 
-  static String weekday(int weekday) {
+  static Map<String, String> weekday(int weekday) {
     switch (weekday) {
       case 1:
-        return "ПН";
+        return {"short": "ПН", "full": "Понедельник"};
       case 2:
-        return "ВТ";
+        return {"short": "ВТ", "full": "Вторник"};
       case 3:
-        return "СР";
+        return {"short": "СР", "full": "Среда"};
       case 4:
-        return "ЧТ";
+        return {"short": "ЧТ", "full": "Четверг"};
       case 5:
-        return "ПТ";
+        return {"short": "ПТ", "full": "Пятница"};
       case 6:
-        return "СБ";
+        return {"short": "СБ", "full": "Суббота"};
       case 7:
-        return "ВС";
+        return {"short": "ВС", "full": "Воскресенье"};
     }
-    return "Nn";
+    return {"short": "Нет", "full": "Нет"};
   }
 
-  static month(int weekday) {
-    switch (weekday) {
+  static month(int number) {
+    switch (number) {
       case 1:
         return {"regular": "январь", "short": "янв", "cased": "января"};
       case 2:
@@ -187,13 +187,13 @@ class Helper {
     return [stops.toString() + " " + text, text];
   }
 
-  static String trainTypeName(TrainType type) {
+  static String trainTypeName(TrainClass type) {
     switch (type) {
-      case TrainType.comfort:
+      case TrainClass.comfort:
         return "Комфорт";
-      case TrainType.regular:
+      case TrainClass.regular:
         return "Стандарт";
-      case TrainType.express:
+      case TrainClass.express:
         return "Экспресс";
 
       default:

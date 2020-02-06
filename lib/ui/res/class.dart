@@ -1,40 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/data/src/constants.dart';
-import 'package:trains/data/src/my_types_icons.dart';
 
 class Class extends StatelessWidget {
-  final TrainType type;
+  final TrainClass type;
   final bool selected;
 
   const Class({Key key, @required this.type, this.selected}) : super(key: key);
 
-  _label() {
+  _icon() {
     switch (type) {
-      case TrainType.regular:
-        return Icon(
-          (selected) ? MyTypes.standart_selected : MyTypes.standart_deselected,
+      case TrainClass.regular:
+        return SvgPicture.asset(
+          'assets/trainClasses/standart.svg',
+          semanticsLabel: 'standart',
           color: Constants.REGULAR,
         );
-      case TrainType.comfort:
-        return Icon(
-          (selected) ? MyTypes.comfort_black : MyTypes.comfort_deselected,
+      case TrainClass.comfort:
+        return SvgPicture.asset(
+          'assets/trainClasses/comfort.svg',
+          semanticsLabel: 'comfort',
           color: Constants.COMFORT,
         );
-      case TrainType.express:
-        return Icon(
-          (selected) ? MyTypes.express_selected : MyTypes.express_deselected,
+      case TrainClass.express:
+        return SvgPicture.asset(
+          'assets/trainClasses/express.svg',
+          semanticsLabel: 'express',
           color: Constants.EXPRESS,
+        );
+      default:
+        return SvgPicture.asset(
+          'assets/trainClasses/d3.svg',
+          semanticsLabel: 'd3-white',
+          color: Constants.WHITE,
         );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 48,
       height: 24,
-      child: _label(),
+      child: _icon(),
     );
   }
 }

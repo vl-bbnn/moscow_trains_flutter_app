@@ -67,7 +67,7 @@ class TypingSuggestionsBloc {
       var containsWithTransit = false;
       var found = false;
       _list.forEach((station) {
-        final name = station.name.toLowerCase();
+        final name = station.title.toLowerCase();
         final subtitle = station.subtitle.toLowerCase();
         if (name == _query || subtitle == _query) {
           updateStation(station);

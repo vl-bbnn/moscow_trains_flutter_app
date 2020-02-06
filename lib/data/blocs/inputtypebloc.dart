@@ -3,9 +3,6 @@ import 'package:rxdart/rxdart.dart';
 enum Input { departure, arrival }
 
 class InputTypeBloc {
-  InputTypeBloc() {
-    type.add(Input.departure);
-  }
 
   switchTypes() {
     switch (type.value) {
@@ -18,7 +15,7 @@ class InputTypeBloc {
     }
   }
 
-  final type = BehaviorSubject<Input>();
+  final type = BehaviorSubject.seeded(Input.departure);
 
   close() {
     type.close();

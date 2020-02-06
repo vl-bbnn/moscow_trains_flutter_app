@@ -1,45 +1,43 @@
+import 'package:trains/data/classes/station.dart';
 
-enum TrainType { regular, comfort, express }
+enum TrainClass { regular, comfort, express }
 
 class Train {
-  DateTime departure = DateTime.now();
+  DateTime departure;
   DateTime arrival;
-  TrainType type;
+  TrainClass trainClass;
   int price = 0;
   String uid;
-  String from;
-  String to;
+  Station from;
+  Station to;
+  bool fromSelected = false;
+  bool toSelected = false;
+  int timeDiffToPrevTrain = 0;
+  int timeDiffToTarget = 0;
   bool isLast = false;
-  bool goingFromSelected = false;
-  bool goingToSelected = false;
-  int timeDiff = 0;
-
-  setTimeDiff(int newDiff){
-    
-  }
 
   Train.fromDynamic(dynamic object) {
-    String _title = object['title'];
-    from = _title.split('—')[0].trim();
-    to = _title.split('—')[1].trim();
+    from = Station (title:object['fromTitle'] ?? '',subtitle:object['fromSubtitle'] ?? '');
+    to = Station (title:object['toTitle'] ?? '',subtitle:object['toSubtitle'] ?? '');
+    fromSelected = object['fromSelected'];
+    toSelected = object['toSelected'];
     uid = object['uid'];
     departure = DateTime.parse(object['departure']).toLocal();
     arrival = DateTime.parse(object['arrival']).toLocal();
-    isLast = object['isLast'];
-    switch (object['train_type']) {
+    switch (object['trainClass']) {
       case 'last':
         {
-          type = TrainType.express;
+          trainClass = TrainClass.express;
           break;
         }
       case 'lastm':
         {
-          type = TrainType.comfort;
+          trainClass = TrainClass.comfort;
           break;
         }
       default:
         {
-          type = TrainType.regular;
+          trainClass = TrainClass.regular;
           break;
         }
     }

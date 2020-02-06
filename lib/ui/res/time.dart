@@ -1,40 +1,39 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trains/data/src/constants.dart';
 
 class Time extends StatelessWidget {
+  final DateTime time;
+  final TextAlign align;
+  final small;
 
-final DateTime time;
-final TextAlign align;
-
-  const Time({Key key, @required this.time, @required this.align}) : super(key: key);
+  const Time(
+      {Key key, @required this.time, @required this.align, this.small = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(Constants.PADDING_SMALL),
+    return Container(
+      width: small ? Constants.TIME_WIDTH_SMALL : Constants.TIME_WIDTH,
       child: RichText(
         textAlign: align,
         text: TextSpan(children: [
           TextSpan(
-            text: DateFormat("H").format(time),
+            text: DateFormat("H").format(time) + ":",
             style: TextStyle(
-                fontSize: 30,
-                fontFamily: "Montserrat",
-                fontWeight: FontWeight.w800,
+                fontFeatures: [FontFeature.enable('ss03')],
+                fontSize: small ? 24 : 30,
+                fontFamily: "Moscow Sans",
                 color: Constants.GREY),
           ),
           TextSpan(
-            text:" ",
+            text: DateFormat("mm").format(time),
             style: TextStyle(
-                fontSize: 18,),
-          ),
-          TextSpan(
-            text:DateFormat("mm").format(time),
-            style: TextStyle(
-                fontSize: 24,
-                fontFamily: "Montserrat",
-                fontWeight: FontWeight.w600,
+                fontFeatures: [FontFeature.enable('ss03')],
+                fontSize: small ? 24 : 30,
+                fontFamily: "Moscow Sans",
                 color: Constants.WHITE),
           )
         ]),

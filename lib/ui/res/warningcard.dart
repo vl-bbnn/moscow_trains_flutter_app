@@ -6,92 +6,97 @@ class WarningCard extends StatelessWidget {
   final int diff;
   final bool first;
   final bool last;
+  final bool betweenTrains;
 
-  const WarningCard(
-      {Key key, @required this.last, @required this.diff, @required this.first})
-      : super(key: key);
+  const WarningCard({
+    Key key,
+    @required this.last,
+    @required this.diff,
+    @required this.first,
+    @required this.betweenTrains,
+  }) : super(key: key);
 
   _labelText() {
+    if (diff == 0) return "";
+    if (betweenTrains) return "перерыв ";
     if (diff < 0)
-      return "раньше на";
+      return "раньше на ";
+    else if (!betweenTrains)
+      return "через ";
     else
-      return "через";
+      return "позже на ";
+  }
+
+  _timeText() {
+    if (diff == 0)
+      return "сейчас";
+    else
+      return Helper.minutesToText(diff)['fullText'];
+  }
+
+  _timeTextColor() {
+    if (diff == 0 || diff.abs() >= Constants.WARNINGAFTER)
+      return Constants.WARNING;
+    else
+      return Constants.WHITE;
   }
 
   _text(context) {
-    final text = diff == 0 ? "сейчас" : Helper.minutesToText(diff)['shortText'];
-    final color = diff.abs() >= 15 || diff == 0
-        ? Constants.NEGATIVE_FOREGROUND
-        : Constants.GREY;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        first && diff != 0
-            ? Text(
-                _labelText(),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.button,
-              )
-            : Container(),
-        Text(
-          text,
-          textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .button
-              .copyWith(fontWeight: FontWeight.w600, color: color),
-        ),
-      ],
-    );
-  }
-
-  _divider() {
-    return Padding(
-      padding: const EdgeInsets.all(Constants.PADDING_BIG),
-      child: Container(
-        height: 2,
-        decoration: ShapeDecoration(
-            color: Constants.SECONDARY,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(1))),
-      ),
+    return RichText(
+      textAlign: TextAlign.start,
+      text: TextSpan(children: [
+        TextSpan(
+            text: _labelText().toUpperCase(),
+            style: Theme.of(context).textTheme.headline2),
+        TextSpan(
+            text: _timeText().toUpperCase(),
+            style: Theme.of(context)
+                .textTheme
+                .headline2
+                .copyWith(color: _timeTextColor())),
+      ]),
     );
   }
 
   _body(context) {
-    if (last || first || diff != 0) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: _divider(),
-          ),
-          last
-              ? Text(
-                  "последний\nпоезд",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .button
-                      .copyWith(color: Constants.NEGATIVE_FOREGROUND),
-                )
-              : _text(context),
-          Expanded(
-            child: _divider(),
-          ),
-        ],
+    if (last) {
+      return Text(
+        "последний поезд".toUpperCase(),
+        textAlign: TextAlign.center,
+        style: Theme.of(context)
+            .textTheme
+            .headline2
+            .copyWith(color: Constants.WARNING),
       );
     } else
-      return Container(
-        child: Center(
-          child: _divider(),
-        ),
-      );
+      return _text(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: Constants.TRAINCARD_WIDTH, child: _body(context));
+    if (betweenTrains && (first || diff.abs() < 10))
+      return SizedBox(
+        height: 25,
+      );
+    if (!betweenTrains && diff.abs() > 90) return Container();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          height: betweenTrains || last ? 25 : 0,
+        ),
+        Row(
+          children: <Widget>[
+            SizedBox(
+              width: betweenTrains || last ? 33 : 0,
+            ),
+            _body(context),
+          ],
+        ),
+        SizedBox(
+          height: 25,
+        ),
+      ],
+    );
   }
 }
