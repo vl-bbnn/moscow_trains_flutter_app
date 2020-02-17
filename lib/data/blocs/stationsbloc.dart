@@ -3,13 +3,13 @@ import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/classes/station.dart';
 
 class StationsBloc {
-  init() async {
+  Future<void> init() async {
     await _loadStations();
   }
 
   final allStations = BehaviorSubject<List<Station>>();
 
-  _loadStations() async {
+  Future<void> _loadStations() async {
     final stationsRef = Firestore.instance
         .collection("stations")
         .orderBy("priority")

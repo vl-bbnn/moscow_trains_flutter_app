@@ -1,23 +1,34 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:math';
-
 import 'package:trains/data/classes/station.dart';
 
+//Suggestions will be reworked soon
+
 class PersistentSuggestionsBloc {
+  final BehaviorSubject<Station> fromStation;
+  final BehaviorSubject<Station> toStation;
+  final BehaviorSubject<List<Station>> allStations;
+
+  final fromList = BehaviorSubject.seeded(List<Station>());
+  final toList = BehaviorSubject.seeded(List<Station>());
+
+  final fromPosition = BehaviorSubject<Map<String, int>>();
+  final toPosition = BehaviorSubject<Map<String, int>>();
+
   PersistentSuggestionsBloc(
-      {@required Stream<List<Station>> allStationsStream,
-      @required this.fromController,
-      @required this.toController}) {
-    allStationsStream.listen((list) => select(list));
-    fromController.listen((station) {
+      {@required this.allStations,
+      @required this.fromStation,
+      @required this.toStation}) {
+    allStations.listen((list) => select(list));
+    fromStation.listen((station) {
       if (!fromList.value.contains(station)) {
         final fromIndex = toPosition.value['current'];
         fromList.value.removeAt(fromIndex);
         fromList.value.insert(fromIndex, station);
       }
     });
-    toController.listen((station) {
+    toStation.listen((station) {
       if (!toList.value.contains(station)) {
         final toIndex = toPosition.value['current'];
         toList.value.removeAt(toIndex);
@@ -40,16 +51,13 @@ class PersistentSuggestionsBloc {
     }
 
     fromList.add(List.generate(5, (_) => allStations.elementAt(index())));
-    fromController.add(fromList.value.elementAt(0));
+    fromStation.add(fromList.value.elementAt(0));
     _setFromIndex(0);
 
     toList.add(List.generate(5, (_) => allStations.elementAt(index())));
-    toController.add(toList.value.elementAt(0));
+    toStation.add(toList.value.elementAt(0));
     _setToIndex(0);
   }
-
-  final BehaviorSubject<Station> fromController;
-  final BehaviorSubject<Station> toController;
 
   switchStations() {
     final toIndex = toPosition.value['current'];
@@ -70,7 +78,7 @@ class PersistentSuggestionsBloc {
     if (current < toList.value.length - 1 && current >= 0) {
       _setToIndex(current + 1);
       final newIndex = toPosition.value['current'];
-      toController.add(toList.value.elementAt(newIndex));
+      toStation.add(toList.value.elementAt(newIndex));
     }
   }
 
@@ -79,7 +87,7 @@ class PersistentSuggestionsBloc {
     if (current <= toList.value.length && current > 0) {
       _setToIndex(current - 1);
       final newIndex = toPosition.value['current'];
-      toController.add(toList.value.elementAt(newIndex));
+      toStation.add(toList.value.elementAt(newIndex));
     }
   }
 
@@ -88,7 +96,7 @@ class PersistentSuggestionsBloc {
     if (current < fromList.value.length - 1 && current >= 0) {
       _setFromIndex(current + 1);
       final newIndex = fromPosition.value['current'];
-      fromController.add(fromList.value.elementAt(newIndex));
+      fromStation.add(fromList.value.elementAt(newIndex));
     }
   }
 
@@ -97,27 +105,19 @@ class PersistentSuggestionsBloc {
     if (current <= fromList.value.length && current > 0) {
       _setFromIndex(current - 1);
       final newIndex = fromPosition.value['current'];
-      fromController.add(fromList.value.elementAt(newIndex));
+      fromStation.add(fromList.value.elementAt(newIndex));
     }
   }
 
   _setFromIndex(int index) {
     if (index < fromList.value.length)
-    fromPosition.add({'current': index, 'total': fromList.value.length});
+      fromPosition.add({'current': index, 'total': fromList.value.length});
   }
 
   _setToIndex(int index) {
     if (index < toList.value.length)
-    toPosition.add({'current': index, 'total': toList.value.length});
+      toPosition.add({'current': index, 'total': toList.value.length});
   }
-
-  final fromList = BehaviorSubject<List<Station>>();
-
-  final toList = BehaviorSubject<List<Station>>();
-
-  final fromPosition = BehaviorSubject<Map<String, int>>();
-
-  final toPosition = BehaviorSubject<Map<String, int>>();
 
   close() {
     fromList.close();

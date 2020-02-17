@@ -1,51 +1,51 @@
 import 'package:flutter/widgets.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:trains/data/blocs/inputtypebloc.dart';
+import 'package:trains/data/blocs/frontpanelbloc.dart';
+import 'package:trains/data/blocs/searchbloc.dart';
 import 'dart:math';
-
 import 'package:trains/data/classes/station.dart';
 
+//Suggestions will be reworked soon
+
 class TypingSuggestionsBloc {
+  final BehaviorSubject<List<Station>> fromList;
+  final BehaviorSubject<List<Station>> toList;
+  final BehaviorSubject<Input> stationType;
+  final BehaviorSubject<List<Station>> allStations;
+  final BehaviorSubject<FrontPanelState> frontPanelState;
+  final void Function(Station) updateSearch;
   String _query;
-  List<Station> _list;
+  var _list = List<Station>();
 
   final textfield = TextEditingController();
   final scroll = ScrollController();
   final focusNode = FocusNode();
-  final typingList = BehaviorSubject<List<Station>>();
-  final suggestions = BehaviorSubject<List<Station>>();
+  final typingList = BehaviorSubject.seeded(List<Station>());
+  final suggestions = BehaviorSubject.seeded(List<Station>());
   final offset = BehaviorSubject<double>();
-  final BehaviorSubject<Function()> pop;
-  final void Function(Station) updateSearch;
-  final BehaviorSubject<Input> stationType;
-  final BehaviorSubject<List<Station>> persistentFromList;
-  final BehaviorSubject<List<Station>> persistentToList;
 
   TypingSuggestionsBloc(
       {@required this.stationType,
-      @required this.persistentFromList,
-      @required this.persistentToList,
-      @required Stream<List<Station>> allStationsStream,
+      @required this.allStations,
+      @required this.fromList,
+      @required this.frontPanelState,
       @required this.updateSearch,
-      @required this.pop}) {
-    suggestions.add(List<Station>());
-    typingList.add(List<Station>());
-
+      @required this.toList}) {
     typingList.listen((newList) {
       if (newList.isNotEmpty)
         suggestions.add(newList);
       else
         switch (stationType.value) {
           case Input.departure:
-            suggestions.add(persistentFromList.value);
+            suggestions.add(fromList.value);
             break;
           case Input.arrival:
-            suggestions.add(persistentToList.value);
+            suggestions.add(toList.value);
             break;
         }
     });
 
-    allStationsStream.listen((newList) {
+    allStations.listen((newList) {
       _list = newList;
       search();
     });
@@ -109,7 +109,7 @@ class TypingSuggestionsBloc {
   updateStation(Station station) {
     updateSearch(station);
     typingList.add(List<Station>());
-    pop.value();
+    frontPanelState.add(FrontPanelState.Search);
     textfield.clear();
   }
 

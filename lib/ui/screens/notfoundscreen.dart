@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:trains/data/src/constants.dart';
+import 'package:trains/ui/res/mycolors.dart';
 
 class NotFoundScreen extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -14,7 +16,7 @@ class NotFoundScreen extends StatelessWidget {
             child: Icon(
               Icons.not_interested,
               size: 30,
-              color: Constants.ELEVATED_2,
+              color: MyColors.SECONDARY,
             ),
           ),
           Padding(
@@ -24,7 +26,7 @@ class NotFoundScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: Constants.ELEVATED_2,
+                color: MyColors.SECONDARY,
               ),
             ),
           )

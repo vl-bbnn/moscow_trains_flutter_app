@@ -37,27 +37,23 @@ flutter_icons:
   adaptive_icon_foreground: "assets/icons/foreground.png"
 
 flutter:
-  
+  uses-material-design: true
+
   assets:
-  - assets/transitLines/m1.svg
-  - assets/transitLines/m5.svg
-  - assets/transitLines/m9.svg
-  - assets/transitLines/m10.svg
-  - assets/transitLines/m14-back.svg
-  - assets/transitLines/m14-fore.svg
-  - assets/transitLines/ka.svg
-  - assets/transitLines/ku.svg
-  - assets/transitLines/ya.svg
-  - assets/trainClasses/express.svg
-  - assets/trainClasses/express-de.svg
-  - assets/trainClasses/standart.svg
-  - assets/trainClasses/standart-de.svg
-  - assets/trainClasses/comfort.svg
-  - assets/trainClasses/comfort-de.svg
-  - assets/trainClasses/d2.svg
-  - assets/trainClasses/d2-de.svg
-  - assets/trainClasses/d3.svg
-  - assets/trainClasses/d3-de.svg
+  - assets/types/m1.svg
+  - assets/types/m5.svg
+  - assets/types/m9.svg
+  - assets/types/m10.svg
+  - assets/types/m14-back.svg
+  - assets/types/m14-fore.svg
+  - assets/types/ka.svg
+  - assets/types/ku.svg
+  - assets/types/yr.svg
+  - assets/types/ex.svg
+  - assets/types/st.svg
+  - assets/types/cm.svg
+  - assets/types/d2.svg
+  - assets/types/d3.svg
 
   fonts:
   - family: Moscow Sans
@@ -81,5 +77,3 @@ flutter:
         weight: 500
       - asset: fonts/PT Root UI/PT Root UI-Bold.ttf
         weight: 700
-  
-  uses-material-design: true

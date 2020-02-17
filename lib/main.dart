@@ -2,9 +2,9 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:trains/data/src/constants.dart';
-import 'package:trains/frontpanel.dart';
-import 'package:trains/ui/schedule/schedulepage.dart';
+import 'package:trains/ui/background.dart';
+import 'package:trains/ui/frontpanel.dart';
+import 'package:trains/ui/res/mycolors.dart';
 import 'data/blocs/inheritedbloc.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -35,9 +35,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print(state);
     if (state == AppLifecycleState.resumed) {
-      final dateTimeBloc = InheritedBloc.dateTimeBloc;
-      if (dateTimeBloc.shouldUpdateTime.value) dateTimeBloc.resetTime();
-      dateTimeBloc.setDatesUpdater();
+      InheritedBloc.searchBloc.renewTimer();
     }
   }
 
@@ -46,46 +44,42 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   _body() {
     return ScrollConfiguration(
       behavior: MyBehavior(),
-      child: WillPopScope(
-        onWillPop: () async {
-          await frontPanelBloc.panelClose.value();
-          return true;
-        },
-        child: FutureBuilder(
-            future: InheritedBloc.init(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return Container();
-              return StreamBuilder<double>(
-                  stream: frontPanelBloc.panelMinHeight,
-                  builder: (context, minHeightStream) {
-                    // print("Min");
-                    return StreamBuilder<double>(
-                        stream: frontPanelBloc.panelMaxHeight,
-                        builder: (context, maxHeightStream) {
-                          final maxHeight = maxHeightStream.data ?? 400.0;
-                          final minHeight = minHeightStream.data ?? 150.0;
-                          // print("Max");
-                          return Scaffold(
-                            resizeToAvoidBottomInset: false,
-                            body: SlidingUpPanel(
-                              backdropColor: Constants.BACKGROUND,
-                              backdropOpacity: 0.2,
-                              controller: frontPanelBloc.panelController,
-                              renderPanelSheet: false,
-                              backdropEnabled: true,
-                              onPanelSlide: (slide) =>
-                                  frontPanelBloc.panelSlide.add(slide),
-                              maxHeight: maxHeight,
-                              minHeight: minHeight,
-                              panel: FrontPanel(),
-                              body: SchedulePage(),
-                            ),
-                          );
-                        });
-                  });
-            }),
-      ),
+      child: FutureBuilder(
+          future: InheritedBloc.init(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done)
+              return Container();
+            frontPanelBloc
+                .updateMaxHeight(MediaQuery.of(context).size.height - 200);
+            return StreamBuilder<double>(
+                stream: frontPanelBloc.panelMinHeight.distinct(),
+                builder: (context, minHeightStream) {
+                  final minHeight = minHeightStream.data ?? 100.0;
+                  return StreamBuilder<double>(
+                      stream: frontPanelBloc.panelMaxHeight.distinct(),
+                      builder: (context, maxHeightStream) {
+                        final maxHeight = maxHeightStream.data ?? 500.0;
+                        return Scaffold(
+                          resizeToAvoidBottomInset: false,
+                          body: SlidingUpPanel(
+                            controller: frontPanelBloc.panelController,
+                            renderPanelSheet: false,
+                            defaultPanelState: PanelState.CLOSED,
+                            onPanelSlide: (slide) =>
+                                frontPanelBloc.panelSlide.add(slide),
+                            maxHeight: maxHeight,
+                            minHeight: minHeight,
+                            panelBuilder: (controller) {
+                              frontPanelBloc.scheduleScrollController
+                                  .add(controller);
+                              return FrontPanel();
+                            },
+                            body: Background(),
+                          ),
+                        );
+                      });
+                });
+          }),
     );
   }
 
@@ -95,47 +89,33 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    // if (Theme.of(context).platform == TargetPlatform.iOS)
-    //   return CupertinoApp(
-    //     title: "Электрички",
-    //     theme: _cupertinoTheme(),
-    //     home: _body(),
-    //   );
-    // else
-      return MaterialApp(
-        title: 'Электрички',
-        theme: _materialTheme(),
-        home: _body(),
-      );
+    return MaterialApp(
+      title: 'Электрички',
+      theme: _materialTheme(),
+      home: _body(),
+    );
   }
-}
-
-CupertinoThemeData _cupertinoTheme() {
-  return CupertinoThemeData(
-      textTheme: CupertinoTextThemeData(
-          dateTimePickerTextStyle: TextStyle(color: Constants.WHITE)));
 }
 
 ThemeData _materialTheme() {
   return ThemeData(
-      scaffoldBackgroundColor: Constants.BACKGROUND,
+      scaffoldBackgroundColor: MyColors.BACKGROUND,
       textTheme: TextTheme(
         headline1: TextStyle(
             fontSize: 14,
             fontFamily: "PT Root UI",
             fontWeight: FontWeight.w500,
-            color: Constants.WHITE),
+            color: MyColors.BLACK),
         headline2: TextStyle(
             fontSize: 14,
             fontFeatures: [FontFeature.enable('ss03')],
             fontFamily: "Moscow Sans",
-            color: Constants.GREY),
+            color: MyColors.GREY),
         headline3: TextStyle(
-            fontSize: 14, fontFamily: "Moscow Sans", color: Constants.GREY),
+            fontSize: 14, fontFamily: "Moscow Sans", color: MyColors.GREY),
         subtitle1: TextStyle(
-            fontSize: 12, fontFamily: "MoscowSans", color: Constants.GREY),
-      ),
-      accentColor: Constants.ELEVATED_2);
+            fontSize: 12, fontFamily: "MoscowSans", color: MyColors.GREY),
+      ));
 }
 
 class MyBehavior extends ScrollBehavior {

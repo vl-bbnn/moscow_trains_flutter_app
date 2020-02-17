@@ -18,7 +18,8 @@ class Station {
     subtitle = doc['subtitle'] ?? "";
     if (doc['transit'] != null) {
       transitList.addAll(List.from(doc['transit']
-          .map((transit) => {'line': transit['line'], 'time': transit['time']})
+          .map(
+              (transit) => {'lines': transit['lines'], 'time': transit['time']})
           .toList()));
     }
   }

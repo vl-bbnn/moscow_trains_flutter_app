@@ -1,4 +1,4 @@
-import 'package:trains/data/src/helper.dart';
+import 'package:trains/src/helper.dart';
 
 class Warning {
   Warning(DateTime fact, DateTime target) {
