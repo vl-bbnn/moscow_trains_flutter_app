@@ -1,29 +1,50 @@
-import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/src/helper.dart';
 
 class TrainsBloc {
-  final results = BehaviorSubject.seeded(List<Train>());
+  BehaviorSubject<Status> status;
+  BehaviorSubject<DateTime> dateTime;
+  BehaviorSubject<List<Train>> allTrains;
 
-  final BehaviorSubject<Status> status;
-  final BehaviorSubject<DateTime> dateTime;
-  final BehaviorSubject<List<Train>> allTrains;
   var trains = List<Train>();
+  final results = BehaviorSubject.seeded(List<Train>());
+  final selected = BehaviorSubject<Train>();
+  final index = BehaviorSubject.seeded(0);
 
-  TrainsBloc(
-      {@required this.status,
-      @required this.dateTime,
-      @required this.allTrains}) {
+  init({newStatus, newDateTime, newAllTrains}) {
+    status = newStatus;
+    dateTime = newDateTime;
+    allTrains = newAllTrains;
     status.listen((newStatus) {
       if (newStatus != Status.found) results.add(List<Train>());
     });
     allTrains.listen((newTrains) {
-      _trimTrains(newTrains);
+      if (newTrains.isNotEmpty) _trimTrains(newTrains);
     });
     dateTime.listen((newDateTime) {
-      _trimTrains(trains);
+      if (trains.isNotEmpty) _trimTrains(trains);
+    });
+  }
+
+  TrainsBloc() {
+    index.listen((newIndex) {
+      if (results.value.isNotEmpty) {
+        // print("newIndex: " + newIndex.toString());
+        selected.add(results.value.elementAt(newIndex));
+      }
+    });
+    results.listen((newTrains) {
+      if (selected.value != null) {
+        final newIndex =
+            newTrains.indexWhere((train) => train.uid == selected.value.uid);
+        if (newIndex > 0)
+          index.add(newIndex);
+        else
+          index.add(0);
+      } else
+        index.add(0);
     });
   }
 
@@ -36,8 +57,9 @@ class TrainsBloc {
         trains = newList;
       } else
         status.add(Status.notFound);
-    } else
+    } else {
       trains = list;
+    }
     _updateResults();
   }
 
@@ -64,9 +86,23 @@ class TrainsBloc {
       status.add(Status.notFound);
   }
 
+  prev() {
+    if (index.value > 0) index.add(index.value - 1);
+  }
+
+  next() {
+    if (index.value < results.value.length - 1) index.add(index.value + 1);
+  }
+
+  select(newIndex) {
+    if (newIndex >= 0 && newIndex <= results.value.length) index.add(newIndex);
+  }
+
   close() {
     results.close();
     status.close();
     dateTime.close();
+    selected.close();
+    index.close();
   }
 }

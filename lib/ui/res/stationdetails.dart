@@ -4,11 +4,8 @@ import 'package:trains/src/helper.dart';
 import 'package:trains/ui/res/mycolors.dart';
 
 class StationDetails extends StatelessWidget {
-  final stationCode;
   final List<Map<String, Object>> transitList;
-  final bool big;
-  const StationDetails({Key key, this.transitList, this.big, this.stationCode})
-      : super(key: key);
+  const StationDetails({Key key, this.transitList}) : super(key: key);
 
   Widget _shape(line) {
     switch (line) {
@@ -18,15 +15,9 @@ class StationDetails extends StatelessWidget {
       case "m10":
       case "m14":
         return SizedBox(
-          width: 30,
-          height: 30,
-          child: Center(
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: _icon(line),
-            ),
-          ),
+          height: 18,
+          width: 18,
+          child: _icon(line),
         );
       case "d2":
       case "d3":
@@ -35,19 +26,14 @@ class StationDetails extends StatelessWidget {
       case "leningrad":
       case "kursk":
         return SizedBox(
-          height: 30,
-          child: Center(
-            child: SizedBox(
-              height: 18,
-              width: 36,
-              child: _icon(line),
-            ),
-          ),
+          height: 12,
+          width: 24,
+          child: _icon(line),
         );
       default:
         return Container(
-          height: 24,
-          width: 24,
+          height: 18,
+          width: 18,
           color: MyColors.WARNING,
         );
     }
@@ -94,7 +80,7 @@ class StationDetails extends StatelessWidget {
                 child: SvgPicture.asset(
                   'assets/types/m14-fore.svg',
                   semanticsLabel: 'm14-fore',
-                  color: MyColors.BLACK,
+                  color: MyColors.PRIMARY_BACKGROUND,
                 ),
               ),
             ),
@@ -140,68 +126,48 @@ class StationDetails extends StatelessWidget {
         return SvgPicture.asset(
           'assets/types/d3.svg',
           semanticsLabel: 'd3-white',
-          color: MyColors.BLACK,
+          color: MyColors.PRIMARY_BACKGROUND,
         );
-    }
-  }
-
-  _special(stationCode) {
-    switch (stationCode) {
-      case "s2006004":
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            Column(
-              children: <Widget>[_shape("m1"), _shape("m5")],
-            ),
-            Column(
-              children: <Widget>[_shape("d2"), _shape("kursk")],
-            ),
-            Column(
-              children: <Widget>[_shape("kazan"), _shape("yaroslavl")],
-            ),
-          ],
-        );
-      default:
-        return Container();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (big || transitList.length < 3)
-      return Row(
-        mainAxisAlignment:
-            big ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.end,
-        children: transitList.map((transit) {
-          final lines = transit['lines'] as List;
-          if (lines == null) return Container();
-          return Row(
-            children: <Widget>[
-              SizedBox(
-                width: big ? 0 : 10,
-              ),
-              Column(
-                children: <Widget>[
-                  Row(
-                    children: lines.map((line) => _shape(line)).toList(),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Text(
-                    Helper.minutesToText(transit['time'])['shortText'],
-                    style: TextStyle(
-                        color: MyColors.BLACK,
-                        fontFamily: "Moscow Sans",
-                        fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          );
-        }).toList(),
-      );
-    return _special(stationCode);
+    final size = MediaQuery.of(context).size;
+    return Row(
+      children: transitList.map((transit) {
+        final lines = transit['lines'] as List;
+        if (lines == null) return Container();
+        return Row(
+          children: <Widget>[
+            Row(
+              children: lines.map((line) {
+                return Row(
+                  children: <Widget>[
+                    _shape(line),
+                    SizedBox(
+                      width: Helper.width(5, size),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+            transitList.length < 3
+                ? Row(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text(
+                        Helper.minutesToText(transit['time'])['shortText'],
+                        style: Theme.of(context).textTheme.headline1,
+                      ),
+                    ],
+                  )
+                : Container(),
+          ],
+        );
+      }).toList(),
+    );
   }
 }

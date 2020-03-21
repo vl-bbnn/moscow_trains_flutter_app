@@ -4,36 +4,40 @@ import 'package:trains/data/classes/train.dart';
 import 'package:trains/ui/res/mycolors.dart';
 
 class TrainClassLogo extends StatelessWidget {
-  final TrainClass type;
-  final bool selected;
+  final TrainClass trainClass;
+  final bool colored;
+  final double height;
+  final double width;
 
-  const TrainClassLogo({Key key, @required this.type, this.selected}) : super(key: key);
+  const TrainClassLogo(
+      {this.trainClass, this.colored = true, this.height = 24.0, this.width})
+      : assert(trainClass != null);
 
   _icon() {
-    switch (type) {
+    switch (trainClass) {
       case TrainClass.regular:
         return SvgPicture.asset(
           'assets/types/st.svg',
           semanticsLabel: 'standart',
-          color: MyColors.REGULAR,
+          color: colored ? MyColors.REGULAR : MyColors.PRIMARY_BACKGROUND,
         );
       case TrainClass.comfort:
         return SvgPicture.asset(
           'assets/types/cm.svg',
           semanticsLabel: 'comfort',
-          color: MyColors.COMFORT,
+          color: colored ? MyColors.COMFORT : MyColors.PRIMARY_BACKGROUND,
         );
       case TrainClass.express:
         return SvgPicture.asset(
           'assets/types/ex.svg',
           semanticsLabel: 'express',
-          color: MyColors.EXPRESS,
+          color: colored ? MyColors.EXPRESS : MyColors.PRIMARY_BACKGROUND,
         );
       default:
         return SvgPicture.asset(
           'assets/types/d3.svg',
           semanticsLabel: 'd3-white',
-          color: MyColors.BLACK,
+          color: MyColors.PRIMARY_BACKGROUND,
         );
     }
   }
@@ -41,8 +45,8 @@ class TrainClassLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 48,
-      height: 24,
+      width: width == null ? height * 2 : width,
+      height: width == null ? height : width / 2,
       child: _icon(),
     );
   }

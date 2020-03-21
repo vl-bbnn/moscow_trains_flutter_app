@@ -1,36 +1,28 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trains/ui/res/mycolors.dart';
 
 class Time extends StatelessWidget {
   final DateTime time;
-  final TextAlign align;
+  final bool warn;
 
-  const Time({Key key, @required this.time, @required this.align})
-      : super(key: key);
+  const Time({@required this.time, this.warn = false});
 
   @override
   Widget build(BuildContext context) {
     return RichText(
-      textAlign: align,
       text: TextSpan(children: [
         TextSpan(
           text: DateFormat("H").format(time) + ":",
-          style: TextStyle(
-              fontFeatures: [FontFeature.enable('ss03')],
-              fontSize: 30,
-              fontFamily: "Moscow Sans",
-              color: MyColors.GREY),
+          style: Theme.of(context).textTheme.headline1.copyWith(
+              fontSize: 36,
+              color: warn ? MyColors.WARNING_07 : MyColors.SECONDARY_TEXT),
         ),
         TextSpan(
           text: DateFormat("mm").format(time),
-          style: TextStyle(
-              fontFeatures: [FontFeature.enable('ss03')],
-              fontSize: 30,
-              fontFamily: "Moscow Sans",
-              color: MyColors.BLACK),
+          style: Theme.of(context).textTheme.headline1.copyWith(
+              fontSize: 36,
+              color: warn ? MyColors.WARNING : MyColors.PRIMARY_TEXT),
         )
       ]),
     );

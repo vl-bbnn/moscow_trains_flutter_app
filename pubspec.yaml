@@ -11,13 +11,13 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^0.1.3
-  cloud_firestore: ^0.13.0+1
   http: ^0.12.0+2
   intl: ^0.16.0
   rxdart: ^0.22.6
   flutter_svg: ^0.15.0
   sliding_up_panel: ^1.0.0
-
+  cloud_firestore: 0.13.4
+  firebase_core: 0.4.4
 
 dev_dependencies:
   flutter_test:
@@ -31,15 +31,19 @@ flutter_launcher_name:
 flutter_icons:
   ios: true
   android: true
-  image_path: "assets/icons/icon.png"
-  image_path_ios: "assets/icons/icon-ios.png"
-  adaptive_icon_background: "assets/icons/background.png"
-  adaptive_icon_foreground: "assets/icons/foreground.png"
+  image_path: "assets/app_icons/icon.png"
+  image_path_ios: "assets/app_icons/icon-ios.png"
+  adaptive_icon_background: "assets/app_icons/background.png"
+  adaptive_icon_foreground: "assets/app_icons/foreground.png"
 
 flutter:
   uses-material-design: true
 
   assets:
+  - assets/icons/share-ios.svg
+  - assets/icons/direction.svg
+  - assets/types/back.svg
+  - assets/types/form.svg
   - assets/types/m1.svg
   - assets/types/m5.svg
   - assets/types/m9.svg
