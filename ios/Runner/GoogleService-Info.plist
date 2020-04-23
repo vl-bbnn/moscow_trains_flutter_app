@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>698564475493-vr47vmmjeu8j6b5qh9p3i55cdqo6h1ab.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.698564475493-vr47vmmjeu8j6b5qh9p3i55cdqo6h1ab</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>698564475493-n717t0qrp3s8v46r8ugmaharkmm0uosp.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAUJnMm3vfqVFvkcGr01rkYQ2Zqv9OwKwQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>698564475493</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>valeriibabanin.trains</string>
+	<key>PROJECT_ID</key>
+	<string>trains-3a75a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>trains-3a75a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:698564475493:ios:b22831b2749f029156a48c</string>
+	<key>DATABASE_URL</key>
+	<string>https://trains-3a75a.firebaseio.com</string>
+</dict>
+</plist>

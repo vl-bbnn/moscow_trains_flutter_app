@@ -10,12 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^0.1.3
   http: ^0.12.0+2
   intl: ^0.16.0
   rxdart: ^0.22.6
-  flutter_svg: ^0.15.0
-  sliding_up_panel: ^1.0.0
+  auto_size_text: ^2.1.0
   cloud_firestore: 0.13.4
   firebase_core: 0.4.4
 
@@ -40,24 +38,33 @@ flutter:
   uses-material-design: true
 
   assets:
-  - assets/icons/share-ios.svg
-  - assets/icons/direction.svg
-  - assets/types/back.svg
-  - assets/types/form.svg
-  - assets/types/m1.svg
-  - assets/types/m5.svg
-  - assets/types/m9.svg
-  - assets/types/m10.svg
-  - assets/types/m14-back.svg
-  - assets/types/m14-fore.svg
-  - assets/types/ka.svg
-  - assets/types/ku.svg
-  - assets/types/yr.svg
-  - assets/types/ex.svg
-  - assets/types/st.svg
-  - assets/types/cm.svg
-  - assets/types/d2.svg
-  - assets/types/d3.svg
+  - assets/map_style_dark.json
+  - assets/types/m1.png
+  - assets/types/m5.png
+  - assets/types/m9.png
+  - assets/types/m10.png
+  - assets/types/m14.png
+  - assets/types/ka.png
+  - assets/types/ku.png
+  - assets/types/ya.png
+  - assets/types/ex.png
+  - assets/types/st.png
+  - assets/types/cm.png
+  - assets/types/d2.png
+  - assets/types/d3.png
+  - assets/maps/s2006004.png
+  - assets/maps/s9600212.png
+  - assets/maps/s9602944.png
+  - assets/maps/s9603256.png
+  - assets/maps/s9603256.png
+  - assets/maps/s9603256.png
+  - assets/maps/s9603468.png
+  - assets/icons/bidirectional_arrow-primary.png
+  - assets/icons/bidirectional_arrow-secondary.png
+  - assets/icons/bookmarks-primary.png
+  - assets/icons/bookmarks-secondary.png
+  - assets/icons/group-primary.png
+  - assets/icons/group-secondary.png
 
   fonts:
   - family: Moscow Sans

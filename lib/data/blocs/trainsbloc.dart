@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/src/helper.dart';
 
 class TrainsBloc {
   BehaviorSubject<Status> status;
@@ -10,8 +10,12 @@ class TrainsBloc {
 
   var trains = List<Train>();
   final results = BehaviorSubject.seeded(List<Train>());
-  final selected = BehaviorSubject<Train>();
   final index = BehaviorSubject.seeded(0);
+  final nextTrain = BehaviorSubject<Train>();
+  final currentTrain = BehaviorSubject<Train>();
+  final curvedValue = BehaviorSubject.seeded(0.0);
+  Train _prev;
+  Train _next;
 
   init({newStatus, newDateTime, newAllTrains}) {
     status = newStatus;
@@ -31,14 +35,18 @@ class TrainsBloc {
   TrainsBloc() {
     index.listen((newIndex) {
       if (results.value.isNotEmpty) {
-        // print("newIndex: " + newIndex.toString());
-        selected.add(results.value.elementAt(newIndex));
+        _prev = newIndex > 0 ? results.value.elementAt(newIndex - 1) : null;
+        currentTrain.add(results.value.elementAt(newIndex));
+        _next = newIndex < results.value.length - 1
+            ? results.value.elementAt(newIndex + 1)
+            : null;
+        // nextTrain.add(_next);
       }
     });
     results.listen((newTrains) {
-      if (selected.value != null) {
+      if (currentTrain.value != null) {
         final newIndex =
-            newTrains.indexWhere((train) => train.uid == selected.value.uid);
+            newTrains.indexWhere((train) => train.uid == currentTrain.value.uid);
         if (newIndex > 0)
           index.add(newIndex);
         else
@@ -60,49 +68,33 @@ class TrainsBloc {
     } else {
       trains = list;
     }
-    _updateResults();
-  }
-
-  _setWarnings() {
-    final list = results.value;
-    list.asMap().forEach((index, train) {
-      train.timeDiffToPrevTrain = index > 0
-          ? Helper.timeDiffInMins(
-              train.departure, list.elementAt(index - 1).departure)
-          : 0;
-      train.timeDiffToTarget =
-          Helper.timeDiffInMins(train.departure, dateTime.value);
-      if (index == list.length - 1) train.isLast = true;
-    });
-    results.add(list);
-  }
-
-  _updateResults() {
     if (trains.isNotEmpty) {
       results.add(trains);
-      _setWarnings();
       if (status.value != Status.found) status.add(Status.found);
-    } else
-      status.add(Status.notFound);
+    } else if (status.value != Status.notFound) status.add(Status.notFound);
   }
 
-  prev() {
-    if (index.value > 0) index.add(index.value - 1);
-  }
-
-  next() {
-    if (index.value < results.value.length - 1) index.add(index.value + 1);
-  }
-
-  select(newIndex) {
-    if (newIndex >= 0 && newIndex <= results.value.length) index.add(newIndex);
+  updatePage(double newPage) {
+    final oldIndex = index.value;
+    final newIndex = newPage.round();
+    final value = (newPage - oldIndex).abs().clamp(0.0, 1.0);
+    curvedValue.add(Curves.linear.transform(value));
+    if ((newPage - newIndex).abs() <= 0.01) {
+      if (newIndex >= 0 && newIndex <= results.value.length - 1)
+        index.add(newIndex);
+    } else {
+      final newTrain = newPage < oldIndex ? _prev : _next;
+      if (newTrain != null) {
+        nextTrain.add(newTrain);
+      }
+    }
   }
 
   close() {
     results.close();
     status.close();
     dateTime.close();
-    selected.close();
+    nextTrain.close();
     index.close();
   }
 }

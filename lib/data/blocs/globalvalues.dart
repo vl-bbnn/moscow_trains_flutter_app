@@ -1,44 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/appnavigationbloc.dart';
 import 'package:trains/data/blocs/mainscreenbloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/blocs/stationsbloc.dart';
+import 'package:trains/data/blocs/suggestionsbloc.dart';
+import 'package:trains/data/blocs/textbloc.dart';
 import 'package:trains/data/blocs/trainsbloc.dart';
 
 class GlobalValues extends InheritedWidget {
   final stationsBloc = StationsBloc();
   final searchBloc = SearchBloc();
   final trainsBloc = TrainsBloc();
-  final schemeBloc = MainScreenBloc();
-  // final persistentSuggestionsBloc = PersistentSuggestionsBloc(
-  //     allStations: stationsBloc.allStations,
-  //     fromStation: searchBloc.fromStation,
-  //     toStation: searchBloc.toStation);
-  // final frontPanelBloc = FrontPanelBloc();
-  // final typingSuggestionsBloc = TypingSuggestionsBloc(
-  //     fromList: persistentSuggestionsBloc.fromList,
-  //     toList: persistentSuggestionsBloc.toList,
-  //     allStations: stationsBloc.allStations,
-  //     updateSearch: searchBloc.updateStation,
-  //     frontPanelState: frontPanelBloc.state,
-  //     stationType: searchBloc.stationType);
+  final scheduleBloc = MainScreenBloc();
+  final suggestionsBloc = SuggestionsBloc();
+  final textBloc = TextBloc();
+  final appNavigationBloc = AppNavigationBloc();
+
   GlobalValues({@required Widget child}) : super(child: child);
 
   Future<void> init() async {
     await stationsBloc.init();
+    trainsBloc.nextTrain.listen((train) {
+      scheduleBloc.updateNextTrain(train);
+    });
+    trainsBloc.currentTrain.listen((train) {
+      scheduleBloc.updateCurrentTrain(train);
+    });
+    trainsBloc.curvedValue.listen((value) {
+      scheduleBloc.updateCurvedValue(newCurvedValue: value);
+    });
     trainsBloc.init(
         newAllTrains: searchBloc.allTrains,
         newDateTime: searchBloc.dateTime,
         newStatus: searchBloc.status);
-    trainsBloc.selected.listen((train) {
-      schemeBloc.updateSelectedTrain(train);
+    suggestionsBloc.updateCallback(newCallback: (newStation) {
+      searchBloc.updateStation(newStation);
+      appNavigationBloc.goBack();
     });
-    searchBloc.status.listen((status) {
-      schemeBloc.updateStatus(status);
+    searchBloc.dateTime.listen((newDateTime) {
+      scheduleBloc.updateCurrentTime(newDateTime);
     });
     searchBloc.fromStation.listen((fromStation) {
-      schemeBloc.updateFrom(fromStation);
-    });searchBloc.toStation.listen((toStation) {
-      schemeBloc.updateTo(toStation);
+      scheduleBloc.updateFrom(fromStation);
+      suggestionsBloc.updateFrom(newCode: fromStation.code);
+    });
+    searchBloc.toStation.listen((toStation) {
+      scheduleBloc.updateTo(toStation);
+      suggestionsBloc.updateTo(newCode: toStation.code);
+    });
+    searchBloc.stationType.listen((type) {
+      suggestionsBloc.updateType(newType: type);
     });
     if (stationsBloc.allStations.value != null &&
         stationsBloc.allStations.value.length > 1) {
@@ -46,6 +57,8 @@ class GlobalValues extends InheritedWidget {
       searchBloc.toStation.add(stationsBloc.allStations.value.elementAt(1));
       await searchBloc.search();
     }
+    suggestionsBloc.updateAllStations(
+        newStations: stationsBloc.allStations.value);
   }
 
   static GlobalValues of(context) {

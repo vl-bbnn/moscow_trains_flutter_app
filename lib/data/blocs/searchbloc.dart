@@ -6,19 +6,21 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:trains/data/classes/train.dart';
+import 'package:trains/common/helper.dart';
 
 enum Status { searching, found, notFound }
-enum Input { departure, arrival }
 
 class SearchBloc {
   SearchBloc() {
     renewTimer();
+    status.listen((event) {
+    });
   }
 
   final fromStation = BehaviorSubject<Station>();
   final toStation = BehaviorSubject<Station>();
 
-  final stationType = BehaviorSubject.seeded(Input.departure);
+  final stationType = BehaviorSubject.seeded(QueryType.departure);
 
   final dateTime = BehaviorSubject.seeded(DateTime.now());
   final allTrains = BehaviorSubject.seeded(List<Train>());
@@ -86,12 +88,12 @@ class SearchBloc {
   }
 
   updateStation(Station station) {
-    if (stationType.value == Input.departure) {
+    if (stationType.value == QueryType.departure) {
       fromStation.add(station);
-      stationType.sink.add(Input.arrival);
-    } else if (stationType.value == Input.arrival) {
+      stationType.sink.add(QueryType.arrival);
+    } else if (stationType.value == QueryType.arrival) {
       toStation.add(station);
-      stationType.sink.add(Input.departure);
+      stationType.sink.add(QueryType.departure);
     }
     search();
   }
@@ -102,18 +104,18 @@ class SearchBloc {
     toStation.add(temp);
 
     if (fromStation.value == null)
-      stationType.sink.add(Input.departure);
-    else if (toStation.value == null) stationType.sink.add(Input.arrival);
+      stationType.sink.add(QueryType.departure);
+    else if (toStation.value == null) stationType.sink.add(QueryType.arrival);
     search();
   }
 
   switchTypes() {
     switch (stationType.value) {
-      case Input.departure:
-        stationType.add(Input.arrival);
+      case QueryType.departure:
+        stationType.add(QueryType.arrival);
         break;
-      case Input.arrival:
-        stationType.add(Input.departure);
+      case QueryType.arrival:
+        stationType.add(QueryType.departure);
         break;
     }
   }

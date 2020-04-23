@@ -1,26 +1,42 @@
 import 'package:trains/data/classes/station.dart';
 
-enum TrainClass { regular, comfort, express }
+enum TrainClass { standart, comfort, express }
 
 class Train {
   DateTime departure;
   DateTime arrival;
   TrainClass trainClass;
-  int price = 0;
+  int price;
   String uid;
   Station from;
   Station to;
-  bool fromSelected = false;
-  bool toSelected = false;
-  int timeDiffToPrevTrain = 0;
-  int timeDiffToTarget = 0;
-  bool isLast = false;
+  bool departureSelected;
+  bool arrivalSelected;
+
+  Train(
+      {this.departure,
+      this.arrival,
+      this.trainClass,
+      this.price: 0,
+      this.uid: "",
+      this.from,
+      this.departureSelected: false,
+      this.to,
+      this.arrivalSelected: false})
+      : assert(departure != null &&
+            arrival != null &&
+            trainClass != null &&
+            from != null &&
+            to != null);
 
   Train.fromDynamic(dynamic object) {
-    from = Station (title:object['fromTitle'] ?? '',subtitle:object['fromSubtitle'] ?? '');
-    to = Station (title:object['toTitle'] ?? '',subtitle:object['toSubtitle'] ?? '');
-    fromSelected = object['fromSelected'];
-    toSelected = object['toSelected'];
+    from = Station(
+        title: object['fromTitle'] ?? '',
+        subtitle: object['fromSubtitle'] ?? '');
+    to = Station(
+        title: object['toTitle'] ?? '', subtitle: object['toSubtitle'] ?? '');
+    departureSelected = object['fromSelected'];
+    arrivalSelected = object['toSelected'];
     uid = object['uid'];
     departure = DateTime.parse(object['departure']).toLocal();
     arrival = DateTime.parse(object['arrival']).toLocal();
@@ -37,7 +53,7 @@ class Train {
         }
       default:
         {
-          trainClass = TrainClass.regular;
+          trainClass = TrainClass.standart;
           break;
         }
     }
