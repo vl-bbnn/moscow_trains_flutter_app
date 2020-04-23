@@ -45,8 +45,8 @@ class _PageManagerState extends State<PageManager>
         builder: (context, nextAppStateSnapshot) {
           if (!nextAppStateSnapshot.hasData)
             return Container(
-              color: Colors.amberAccent,
-            );
+                // color: Colors.amberAccent,
+                );
           final nextAppState = nextAppStateSnapshot.data;
 
           animationController.reverse(from: 1.0).then((_) {

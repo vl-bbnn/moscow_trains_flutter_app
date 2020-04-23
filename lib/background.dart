@@ -24,7 +24,7 @@ class Background extends StatelessWidget {
           switch (newAppState) {
             case AppState.Launch:
               return Container(
-                color: Colors.blue,
+                // color: Colors.blue,
               );
             case AppState.Schedule:
               return SchedulePage();
