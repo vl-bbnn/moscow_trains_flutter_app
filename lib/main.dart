@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:trains/bottompanel.dart';
 import 'package:trains/data/blocs/globalvalues.dart';
 import 'package:trains/pagemanager.dart';
 import 'package:trains/ui/common/mycolors.dart';
@@ -40,26 +39,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  _body(context) {
-    final globalValues = GlobalValues.of(context);
-    // return Scaffold(
-    //   body: Center(
-    //     child: Text('text'),
-    //   ),
-    // );
-    return ScrollConfiguration(
-      behavior: MyBehavior(),
-      child: FutureBuilder(
-          future: globalValues.init(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done)
-              return Container();
-            return Scaffold(
-                resizeToAvoidBottomInset: false, body: PageManager());
-          }),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -70,7 +49,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       title: 'Электрички',
       theme: _materialTheme(),
-      home: _body(context),
+      home: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: PageManager()),
     );
   }
 }

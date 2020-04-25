@@ -16,30 +16,24 @@ class GlobalValues extends InheritedWidget {
   final textBloc = TextBloc();
   final appNavigationBloc = AppNavigationBloc();
 
-  GlobalValues({@required Widget child}) : super(child: child);
-
-  Future<void> init() async {
-    await stationsBloc.init();
-    trainsBloc.nextTrain.listen((train) {
-      scheduleBloc.updateNextTrain(train);
-    });
-    trainsBloc.currentTrain.listen((train) {
-      scheduleBloc.updateCurrentTrain(train);
-    });
-    trainsBloc.curvedValue.listen((value) {
-      scheduleBloc.updateCurvedValue(newCurvedValue: value);
-    });
+  GlobalValues({@required Widget child}) : super(child: child) {
+    trainsBloc.nextTrain.listen((train) => scheduleBloc.updateNextTrain(train));
+    trainsBloc.currentTrain
+        .listen((train) => scheduleBloc.updateCurrentTrain(train));
+    trainsBloc.curvedValue.listen(
+        (value) => scheduleBloc.updateCurvedValue(newCurvedValue: value));
     trainsBloc.init(
         newAllTrains: searchBloc.allTrains,
         newDateTime: searchBloc.dateTime,
         newStatus: searchBloc.status);
+
     suggestionsBloc.updateCallback(newCallback: (newStation) {
       searchBloc.updateStation(newStation);
       appNavigationBloc.goBack();
     });
-    searchBloc.dateTime.listen((newDateTime) {
-      scheduleBloc.updateCurrentTime(newDateTime);
-    });
+    
+    searchBloc.dateTime
+        .listen((newDateTime) => scheduleBloc.updateCurrentTime(newDateTime));
     searchBloc.fromStation.listen((fromStation) {
       scheduleBloc.updateFrom(fromStation);
       suggestionsBloc.updateFrom(newCode: fromStation.code);
@@ -48,17 +42,19 @@ class GlobalValues extends InheritedWidget {
       scheduleBloc.updateTo(toStation);
       suggestionsBloc.updateTo(newCode: toStation.code);
     });
-    searchBloc.stationType.listen((type) {
-      suggestionsBloc.updateType(newType: type);
+    searchBloc.stationType
+        .listen((type) => suggestionsBloc.updateType(newType: type));
+
+    stationsBloc.init().then((_) {
+      if (stationsBloc.allStations.value != null &&
+          stationsBloc.allStations.value.length > 1) {
+        searchBloc.fromStation.add(stationsBloc.allStations.value.elementAt(0));
+        searchBloc.toStation.add(stationsBloc.allStations.value.elementAt(1));
+        suggestionsBloc.updateAllStations(
+            newStations: stationsBloc.allStations.value);
+        searchBloc.search();
+      }
     });
-    if (stationsBloc.allStations.value != null &&
-        stationsBloc.allStations.value.length > 1) {
-      searchBloc.fromStation.add(stationsBloc.allStations.value.elementAt(0));
-      searchBloc.toStation.add(stationsBloc.allStations.value.elementAt(1));
-      await searchBloc.search();
-    }
-    suggestionsBloc.updateAllStations(
-        newStations: stationsBloc.allStations.value);
   }
 
   static GlobalValues of(context) {
