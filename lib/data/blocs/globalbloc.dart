@@ -1,49 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:rxdart/subjects.dart';
 import 'package:trains/data/blocs/appnavigationbloc.dart';
-import 'package:trains/data/blocs/mainscreenbloc.dart';
+import 'package:trains/data/blocs/schedulebloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/blocs/stationsbloc.dart';
 import 'package:trains/data/blocs/suggestionsbloc.dart';
 import 'package:trains/data/blocs/textbloc.dart';
 import 'package:trains/data/blocs/trainsbloc.dart';
 
-class GlobalValues extends InheritedWidget {
+class GlobalBloc extends InheritedWidget {
   final stationsBloc = StationsBloc();
   final searchBloc = SearchBloc();
   final trainsBloc = TrainsBloc();
-  final scheduleBloc = MainScreenBloc();
+  final scheduleBloc = ScheduleBloc();
+  final sizesBloc = SizesBloc();
   final suggestionsBloc = SuggestionsBloc();
   final textBloc = TextBloc();
   final appNavigationBloc = AppNavigationBloc();
 
-  GlobalValues({@required Widget child}) : super(child: child) {
-    trainsBloc.nextTrain.listen((train) => scheduleBloc.updateNextTrain(train));
-    trainsBloc.currentTrain
-        .listen((train) => scheduleBloc.updateCurrentTrain(train));
-    trainsBloc.curvedValue.listen(
-        (value) => scheduleBloc.updateCurvedValue(newCurvedValue: value));
-    trainsBloc.init(
-        newAllTrains: searchBloc.allTrains,
-        newDateTime: searchBloc.dateTime,
-        newStatus: searchBloc.status);
+  final status = BehaviorSubject.seeded(Status.notFound);
+
+  GlobalBloc({@required Widget child}) : super(child: child) {
+    trainsBloc.selectedTrainOutputStream
+        .listen((train) => scheduleBloc.selectedTrainInputStream.add(train));
+    trainsBloc.currentTrainOutputStream
+        .listen((train) => scheduleBloc.currentTrainInputStream.add(train));
+    trainsBloc.valueOutputStream
+        .listen((value) => scheduleBloc.valueInputStream.add(value));
 
     suggestionsBloc.updateCallback(newCallback: (newStation) {
       searchBloc.updateStation(newStation);
       appNavigationBloc.goBack();
     });
-    
+
+    searchBloc.statusOutputStream.mergeWith(
+        [trainsBloc.statusOutputStream]).listen((value) => status.add(value));
+
     searchBloc.dateTime
-        .listen((newDateTime) => scheduleBloc.updateCurrentTime(newDateTime));
+        .listen((value) => trainsBloc.dateTimeInputStream.add(value));
+    searchBloc.allTrains
+        .listen((value) => trainsBloc.allTrainsInputStream.add(value));
+    // searchBloc.dateTime
+    //     .listen((newDateTime) => scheduleBloc.updateCurrentTime(newDateTime));
     searchBloc.fromStation.listen((fromStation) {
-      scheduleBloc.updateFrom(fromStation);
       suggestionsBloc.updateFrom(newCode: fromStation.code);
     });
     searchBloc.toStation.listen((toStation) {
-      scheduleBloc.updateTo(toStation);
       suggestionsBloc.updateTo(newCode: toStation.code);
     });
     searchBloc.stationType
         .listen((type) => suggestionsBloc.updateType(newType: type));
+
+    sizesBloc.outputSizes
+        .listen((newValue) => scheduleBloc.inputSizes.add(newValue));
 
     stationsBloc.init().then((_) {
       if (stationsBloc.allStations.value != null &&
@@ -57,8 +67,12 @@ class GlobalValues extends InheritedWidget {
     });
   }
 
-  static GlobalValues of(context) {
-    return (context.inheritFromWidgetOfExactType(GlobalValues) as GlobalValues);
+  close() {
+    status.close();
+  }
+
+  static GlobalBloc of(context) {
+    return (context.inheritFromWidgetOfExactType(GlobalBloc) as GlobalBloc);
   }
 
   @override

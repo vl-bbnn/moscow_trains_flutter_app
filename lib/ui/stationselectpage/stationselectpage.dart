@@ -1,11 +1,15 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/station.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/stationcardforselector.dart';
 
 class SuggestionsList extends StatefulWidget {
+  final Sizes sizes;
+
+  const SuggestionsList({Key key, this.sizes}) : super(key: key);
   @override
   _SuggestionsListState createState() => _SuggestionsListState();
 }
@@ -52,7 +56,7 @@ class _SuggestionsListState extends State<SuggestionsList>
 
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     final suggestionsBloc = globalValues.suggestionsBloc;
     final size = MediaQuery.of(context).size;
     double oldPageValue = 0.0;

@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
-import 'package:trains/common/helper.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/ui/common/customicon.dart';
-import 'package:trains/ui/common/mysizes.dart';
 
 class NavigationButtons extends StatelessWidget {
+  final Sizes sizes;
+
+  const NavigationButtons({Key key, this.sizes}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
-    final size = MediaQuery.of(context).size;
-    final iconSize = Helper.width(NavPanelSizes.ICON_SIZE, size);
-    final horizontalPadding =
-        Helper.width(NavPanelSizes.HORIZONTAL_PADDING, size);
-    final topPadding = Helper.height(NavPanelSizes.TOP_PADDING, size);
-    final bottomPadding = Helper.height(NavPanelSizes.BOTTOM_PADDING, size) +
-        MediaQuery.of(context).padding.bottom;
+    final globalValues = GlobalBloc.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          horizontalPadding, topPadding, horizontalPadding, bottomPadding),
+          sizes.navPanelInnerHorizontalPadding,
+          sizes.navPanelInnerTopPadding,
+          sizes.navPanelInnerHorizontalPadding,
+          sizes.navPanelInnerBottomPadding),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          CustomIcon(type: Type.bookmarks, size: iconSize),
+          CustomIcon(type: Type.bookmarks, size: sizes.navPanelIconSize),
           GestureDetector(
               onTap: () {
                 globalValues.searchBloc.switchInputs();
               },
-              child: CustomIcon(type: Type.arrows, size: iconSize)),
-          CustomIcon(type: Type.people, size: iconSize),
+              child:
+                  CustomIcon(type: Type.arrows, size: sizes.navPanelIconSize)),
+          CustomIcon(type: Type.people, size: sizes.navPanelIconSize),
         ],
       ),
     );

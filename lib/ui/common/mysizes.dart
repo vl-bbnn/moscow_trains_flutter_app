@@ -1,3 +1,8 @@
+class CommonSizes {
+  static const HEIGHT = 812.0;
+  static const WIDTH = 375.0;
+}
+
 class MainScreenSizes {
   static const TOP_PADDING = 42.0;
   static const LEFT_PADDING = 45.0;
@@ -49,14 +54,13 @@ class TimeSizes {
 }
 
 class RegularTrainSizes {
-  static const CARD_HEIGHT = 92.0;
+  static const CARD_HEIGHT = 94.0;
   static const CARD_WIDTH = 84.0;
   static const VERTICAL_PADDING = 20.0;
-  static const CENTER_PADDING = 15.0;
+  static const HORIZONTAL_PADDING = 10.0;
   static const OUTER_PADDING = 15.0;
-  static const OTHER_PADDING = 25.0;
   static const TEXT_HEIGHT = 30.0;
-  static const TEXT_WIDTH = 44.0;
+  static const TEXT_WIDTH = 42.0;
   static const DOT_SIZE = 8.0;
   static const DOT_GLOW = 12.0;
   static const CONTENT_PADDING = 10.0;
@@ -64,14 +68,14 @@ class RegularTrainSizes {
 
 class SelectedTrainSizes {
   static const CARD_HEIGHT = 128.0;
-  static const CARD_WIDTH = 212.0;
+  static const CARD_WIDTH = 202.0;
   static const VERTICAL_PADDING = 25.0;
-  static const HORIZONTAL_PADDING = 20.0;
+  static const HORIZONTAL_PADDING = 25.0;
   static const TEXT_HEIGHT = 16.0;
-  static const CLASS_TEXT_WIDTH = 78.0;
+  static const CLASS_TEXT_WIDTH = 80.0;
   static const PRICE_TEXT_WIDTH = 40.0;
-  static const STOPS_TEXT_WIDTH = 106.0;
-  static const TIME_TEXT_WIDTH = 106.0;
+  static const STOPS_TEXT_WIDTH = 100.0;
+  static const TIME_TEXT_WIDTH = 100.0;
   static const DOT_SIZE = 10.0;
   static const DOT_GLOW = 14.0;
   static const CONTENT_PADDING = 15.0;

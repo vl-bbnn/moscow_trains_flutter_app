@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
-import 'package:trains/ui/common/mysizes.dart';
 
 class TrainDot extends StatelessWidget {
   final train;
   final curvedValue;
+  final Sizes sizes;
 
-  const TrainDot({Key key, this.train, this.curvedValue: 0.0})
+  const TrainDot({Key key, this.train, this.curvedValue: 0.0, this.sizes})
       : super(key: key);
 
   _color() {
@@ -27,12 +28,13 @@ class TrainDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final dotDize = RegularTrainSizes.DOT_SIZE +
+    final dotDize = sizes.regularTrainIconSize +
         curvedValue *
-            (SelectedTrainSizes.DOT_SIZE - RegularTrainSizes.DOT_SIZE);
-    final glowSize = RegularTrainSizes.DOT_GLOW +
+            (sizes.selectedTrainIconSize - sizes.regularTrainIconSize);
+    final glowSize = sizes.regularTrainIconGlow +
         curvedValue *
-            (SelectedTrainSizes.DOT_GLOW - RegularTrainSizes.DOT_GLOW);
+            (sizes.selectedTrainIconGlow - sizes.regularTrainIconGlow);
+            
     return Container(
       width: Helper.width(glowSize, size),
       height: Helper.height(glowSize, size),

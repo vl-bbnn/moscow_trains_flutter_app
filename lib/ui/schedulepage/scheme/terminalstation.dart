@@ -1,43 +1,25 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/schedulebloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/common/helper.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
+import 'package:trains/data/classes/station.dart';
 import 'package:trains/ui/common/mycolors.dart';
-import 'package:trains/ui/common/mysizes.dart';
 
-class TerminalStation extends StatefulWidget {
+class TerminalStation extends StatelessWidget {
   final Status status;
-  final double value;
   final QueryType type;
-  final bool trainTerminal;
-  final String text;
+  final Sizes sizes;
 
   const TerminalStation(
-      {this.text: "",
-      this.value: 0.0,
-      this.status: Status.notFound,
+      {this.status: Status.notFound,
       this.type: QueryType.departure,
-      this.trainTerminal: true});
+      this.sizes});
 
-  @override
-  _TerminalStationState createState() => _TerminalStationState();
-}
-
-class _TerminalStationState extends State<TerminalStation> {
-  double fullHeight;
-  double fullWidth;
-  TextAlign align;
-
-  update() {
-    final size = MediaQuery.of(context).size;
-    align = alignment();
-    fullWidth = Helper.height(SchemeSizes.TEXT_WIDTH, size);
-    fullHeight = Helper.width(SchemeSizes.TEXT_HEIGHT, size);
-  }
-
-  alignment() {
-    switch (widget.type) {
+  _alignment() {
+    switch (type) {
       case QueryType.departure:
         return TextAlign.end;
       case QueryType.arrival:
@@ -45,32 +27,91 @@ class _TerminalStationState extends State<TerminalStation> {
     }
   }
 
+  _valueStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureIconValue;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalIconValue;
+    }
+  }
+
+  _selectedStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureSelected;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalSelected;
+    }
+  }
+
+  _stationStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureStation;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalStation;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    update();
-    final textBloc = GlobalValues.of(context).textBloc;
-    final width = widget.value * fullWidth;
-    final height = widget.value * fullHeight;
-    return widget.status == Status.found && !widget.trainTerminal
-        ? RotatedBox(
-            quarterTurns: 3,
-            child: Opacity(
-              opacity: widget.value,
-              child: Container(
-                  width: width,
-                  height: height,
-                  child: AutoSizeText(
-                    widget.text,
-                    textAlign: align,
-                    maxLines: 1,
-                    minFontSize: 2,
-                    group: textBloc.terminalStations,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headline2
-                        .copyWith(fontSize: 14, color: MyColors.TEXT_SE),
-                  )),
-            ))
-        : SizedBox();
+    final globalBloc = GlobalBloc.of(context);
+
+    final align = _alignment();
+
+    final fullHeight = sizes.schemeTextWidth;
+    final fullWidth = sizes.schemeTextHeight;
+
+    return StreamBuilder<bool>(
+        stream: _selectedStream(globalBloc.scheduleBloc),
+        builder: (context, selectedSnapshot) {
+          if (!selectedSnapshot.hasData) return Container();
+
+          final selected = selectedSnapshot.data;
+
+          if (status != Status.found || selected) return Container();
+
+          return StreamBuilder<Station>(
+              stream: _stationStream(globalBloc.scheduleBloc),
+              builder: (context, stationSnapshot) {
+                if (!stationSnapshot.hasData) return Container();
+
+                final name = stationSnapshot.data.title;
+
+                return StreamBuilder<double>(
+                    stream: _valueStream(globalBloc.scheduleBloc),
+                    builder: (context, valueSnapshot) {
+                      if (!valueSnapshot.hasData) return Container();
+
+                      final value = valueSnapshot.data;
+
+                      final width = value * fullWidth;
+                      final height = value * fullHeight;
+
+                      return RotatedBox(
+                          quarterTurns: 3,
+                          child: Opacity(
+                            opacity: value,
+                            child: Container(
+                                width: width,
+                                height: height,
+                                child: AutoSizeText(
+                                  name,
+                                  textAlign: align,
+                                  maxLines: 1,
+                                  minFontSize: 2,
+                                  group: globalBloc.textBloc.terminalStations,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline2
+                                      .copyWith(
+                                          fontSize: 14,
+                                          color: MyColors.TEXT_SE),
+                                )),
+                          ));
+                    });
+              });
+        });
   }
 }

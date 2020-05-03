@@ -1,41 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/schedulebloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
+import 'package:trains/data/classes/station.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
 import 'package:trains/ui/common/mysizes.dart';
 
-class DeselectedRoad extends StatefulWidget {
+class DeselectedRoad extends StatelessWidget {
   final Status status;
-  final double value;
+  final Sizes sizes;
   final QueryType type;
-  final TrainClass trainClass;
-  final bool roadTerminal;
 
-  const DeselectedRoad(
-      {this.status: Status.notFound,
-      this.value: 0.0,
-      this.roadTerminal: false,
-      this.type: QueryType.departure,
-      this.trainClass: TrainClass.standart});
+  const DeselectedRoad({this.status, this.type, this.sizes});
 
-  @override
-  _DeselectedRoadState createState() => _DeselectedRoadState();
-}
-
-class _DeselectedRoadState extends State<DeselectedRoad> {
-  double fullHeight;
-  Color backColor;
-  Color foreColor;
-
-  update() {
-    backColor = backgroundColor();
-    foreColor = foregroundColor();
-    fullHeight = _fullHeight();
-  }
-
-  backgroundColor() {
-    switch (widget.status) {
+  _backgroundColor() {
+    switch (status) {
       case Status.searching:
       case Status.found:
         return MyColors.LE_B40;
@@ -44,8 +26,8 @@ class _DeselectedRoadState extends State<DeselectedRoad> {
     }
   }
 
-  foregroundColor() {
-    switch (widget.trainClass) {
+  _foregroundColor(TrainClass trainClass) {
+    switch (trainClass) {
       case TrainClass.standart:
         return MyColors.ST_B40;
       case TrainClass.comfort:
@@ -56,45 +38,89 @@ class _DeselectedRoadState extends State<DeselectedRoad> {
   }
 
   _fullHeight() {
-    final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    switch (widget.type) {
+    switch (type) {
       case QueryType.departure:
-        return padding.top +
-            Helper.height(
-                MainScreenSizes.TOP_PADDING + StationSizes.STATION_HEIGHT / 2,
-                MediaQuery.of(context).size);
+        return sizes.schemeDepartureHeight;
       case QueryType.arrival:
-        return padding.bottom +
-            Helper.height(
-                MainScreenSizes.BOTTOM_PADDING +
-                    NavPanelSizes.PANEL_HEIGHT +
-                    NavPanelSizes.BOTTOM_PADDING +
-                    StationSizes.STATION_HEIGHT / 2,
-                size);
+        return sizes.schemeleArrivalHeight;
+    }
+  }
+
+  _valueStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureValue;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalValue;
+    }
+  }
+
+  _selectedStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureSelected;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalSelected;
+    }
+  }
+
+  _stationStream(SearchBloc searchBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return searchBloc.fromStation;
+      case QueryType.arrival:
+        return searchBloc.toStation;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    update();
-    final height = fullHeight * widget.value;
-    return Container(
-      height: fullHeight,
-      width: SchemeSizes.LINE_WIDTH,
-      color: widget.roadTerminal ? null : backColor,
-      child: widget.status == Status.found
-          ? Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                height: height,
-                color: foreColor,
-                // decoration: ShapeDecoration(
-                //     shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.lerp())),
-              ),
-            )
-          : SizedBox(),
-    );
+    final globalBloc = GlobalBloc.of(context);
+    final valueStream = _valueStream(globalBloc.scheduleBloc);
+    final stationStream = _stationStream(globalBloc.searchBloc);
+    final selectedStream = _selectedStream(globalBloc.scheduleBloc);
+    final fullHeight = _fullHeight();
+    return StreamBuilder<Station>(
+        stream: stationStream,
+        builder: (context, stationSnapshot) {
+          if (!stationSnapshot.hasData) return SizedBox();
+          final terminal = stationSnapshot.data.terminal ?? false;
+          final backColor = _backgroundColor();
+          return Container(
+            height: fullHeight,
+            width: sizes.schemeLineWidth,
+            color: terminal ? null : backColor,
+            child: StreamBuilder<bool>(
+                stream: selectedStream,
+                builder: (context, selectedSnapshot) {
+                  final selected = selectedSnapshot.data ?? true;
+                  return StreamBuilder<TrainClass>(
+                      stream: globalBloc.scheduleBloc.trainClass,
+                      builder: (context, trainClassSnapshot) {
+                        if (!trainClassSnapshot.hasData) return Container();
+                        final trainClass = trainClassSnapshot.data;
+                        final foreColor = _foregroundColor(trainClass);
+                        return StreamBuilder<double>(
+                            stream: valueStream,
+                            builder: (context, valueSnapshot) {
+                              final value = valueSnapshot.hasData
+                                  ? valueSnapshot.data
+                                  : 0.0;
+                              return Container(
+                                child: status == Status.found && !selected
+                                    ? Align(
+                                        alignment: Alignment.topCenter,
+                                        child: Container(
+                                          height: fullHeight * value,
+                                          color: foreColor,
+                                        ),
+                                      )
+                                    : SizedBox(),
+                              );
+                            });
+                      });
+                }),
+          );
+        });
   }
 }

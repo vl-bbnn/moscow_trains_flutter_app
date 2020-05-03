@@ -1,13 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/common/helper.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/ui/common/mycolors.dart';
 
 class StationInput extends StatelessWidget {
+  final Sizes sizes;
+
+  const StationInput({Key key, this.sizes}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     final suggestionsBloc = globalValues.suggestionsBloc;
     final size = MediaQuery.of(context).size;
     return Align(

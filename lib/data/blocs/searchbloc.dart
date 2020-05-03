@@ -13,9 +13,9 @@ enum Status { searching, found, notFound }
 class SearchBloc {
   SearchBloc() {
     renewTimer();
-    status.listen((event) {
-    });
   }
+
+  final allStationsInputStream = BehaviorSubject<List<Station>>();
 
   final fromStation = BehaviorSubject<Station>();
   final toStation = BehaviorSubject<Station>();
@@ -24,7 +24,8 @@ class SearchBloc {
 
   final dateTime = BehaviorSubject.seeded(DateTime.now());
   final allTrains = BehaviorSubject.seeded(List<Train>());
-  final status = BehaviorSubject.seeded(Status.notFound);
+
+  final statusOutputStream = BehaviorSubject.seeded(Status.notFound);
 
   var _periodicTimer;
 
@@ -47,7 +48,7 @@ class SearchBloc {
 
   Future<void> search() async {
     final list = List<Train>();
-    status.add(Status.searching);
+    statusOutputStream.add(Status.searching);
     final scheduleRef = Firestore.instance
         .collection("schedule")
         .document(folderNameFromDate(dateTime.value))
@@ -72,19 +73,30 @@ class SearchBloc {
           final doc = await scheduleRef.get();
           if (doc.exists) {
             print("Document loaded from Firestore");
-            doc.data['trains']
-                .forEach((train) => list.add(Train.fromDynamic(train)));
+            doc.data['trains'].forEach((train) {
+              final newTrain = Train.fromDynamic(train);
+              if (allStationsInputStream.value != null) {
+                newTrain.from = findStation(newTrain.from.title);
+                newTrain.to = findStation(newTrain.to.title);
+              }
+              list.add(newTrain);
+            });
             allTrains.add(list);
           } else {
             print("Document not found again. Error");
             print("Not Found");
-            status.add(Status.notFound);
+            statusOutputStream.add(Status.notFound);
           }
         }
       } catch (error) {
         print(error);
       }
     }
+  }
+
+  findStation(String title) {
+    return allStationsInputStream.value.firstWhere(
+        (station) => station.title.toLowerCase() == title.toLowerCase());
   }
 
   updateStation(Station station) {
@@ -126,5 +138,6 @@ class SearchBloc {
     dateTime.close();
     stationType.close();
     _periodicTimer?.cancel();
+    allStationsInputStream.close();
   }
 }

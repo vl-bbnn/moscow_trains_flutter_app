@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
 
@@ -59,8 +59,7 @@ class _TimeTextState extends State<TimeText> {
       return baseStyle.copyWith(
           fontSize: 12.0,
           color: widget.shouldWarn
-              ? Color.lerp(
-                  MyColors.WA, MyColors.TEXT_PR, widget.curvedValue)
+              ? Color.lerp(MyColors.WA, MyColors.TEXT_PR, widget.curvedValue)
               : MyColors.TEXT_PR,
           fontFeatures: specialOneFeature
               ? [FontFeature.disable('ss03')]
@@ -69,8 +68,8 @@ class _TimeTextState extends State<TimeText> {
       return baseStyle.copyWith(
           fontSize: 10.0,
           color: widget.shouldWarn
-              ? Color.lerp(MyColors.WA_B70, MyColors.TEXT_SE,
-                  widget.curvedValue)
+              ? Color.lerp(
+                  MyColors.WA_B70, MyColors.TEXT_SE, widget.curvedValue)
               : MyColors.TEXT_SE);
   }
 
@@ -142,7 +141,7 @@ class _TimeTextState extends State<TimeText> {
   @override
   Widget build(BuildContext context) {
     init();
-    final textBloc = GlobalValues.of(context).textBloc;
+    final textBloc = GlobalBloc.of(context).textBloc;
     final hasData = widget.time != null;
     return Container(
       color: hasData ? null : Colors.lightBlue,

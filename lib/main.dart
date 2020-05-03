@@ -2,13 +2,13 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/pagemanager.dart';
 import 'package:trains/ui/common/mycolors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(GlobalValues(
+  runApp(GlobalBloc(
     child: MyApp(),
   ));
 }
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print(state);
     if (state == AppLifecycleState.resumed) {
-      final globalValues = GlobalValues.of(context);
+      final globalValues = GlobalBloc.of(context);
       globalValues.searchBloc.renewTimer();
     }
   }
@@ -49,9 +49,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       title: 'Электрички',
       theme: _materialTheme(),
-      home: Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: PageManager()),
+      home: Scaffold(resizeToAvoidBottomInset: false, body: PageManager()),
     );
   }
 }

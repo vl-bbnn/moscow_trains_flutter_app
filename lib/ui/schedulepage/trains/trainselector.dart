@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/common/helper.dart';
-import 'package:trains/ui/common/mysizes.dart';
-import 'package:trains/ui/schedulepage/traincard.dart';
+import 'package:trains/ui/schedulepage/trains/traincard.dart';
 
 class TrainSelector extends StatelessWidget {
+  final Sizes sizes;
+
+  const TrainSelector({Key key, this.sizes}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalBloc = GlobalBloc.of(context);
     final size = MediaQuery.of(context).size;
     // print("Size: " + size.toString());
-    final selectedTrainCardWidth =
-        Helper.width(SelectedTrainSizes.CARD_WIDTH, size);
-    // print("Selected Train Card Width: " + selectedTrainCardWidth.toString());
+    final selectedTrainCardWidth = sizes.selectedTrainCardWidth;
     final controller = PageController(
         viewportFraction: selectedTrainCardWidth / size.width, initialPage: 0);
-    var oldPage = 0.0;
-    controller.addListener(() {
-      final page = controller.page;
-      if (page != oldPage) {
-        globalValues.trainsBloc.updatePage(page);
-        oldPage = page;
-      }
-    });
+    globalBloc.trainsBloc.controller.add(controller);
     return StreamBuilder<List<Train>>(
-        stream: globalValues.trainsBloc.results,
+        stream: globalBloc.trainsBloc.results,
         builder: (context, resultsStream) {
           if (!resultsStream.hasData) return Container();
           final trains = resultsStream.data;
@@ -33,7 +27,7 @@ class TrainSelector extends StatelessWidget {
           return hasData
               ? PageView.builder(
                   controller: controller,
-                  itemCount: hasData ? trains.length : 5,
+                  itemCount: hasData ? trains.length : 0,
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () => controller.animateToPage(index,
                         duration: Duration(milliseconds: 600),
@@ -55,7 +49,7 @@ class TrainSelector extends StatelessWidget {
   }
 
   trainBuilder({index, train, controller, prevDeparture, nextDeparture}) {
-    return new AnimatedBuilder(
+    return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
         var value = index == 0 ? 1.0 : 0.0;
@@ -71,11 +65,13 @@ class TrainSelector extends StatelessWidget {
         final selectedDepartureTime =
             left ? nextDeparture : right ? prevDeparture : null;
         return TrainCard(
-            train: train,
-            curvedValue: curvedValue,
-            left: left,
-            right: right,
-            selectedDepartureTime: selectedDepartureTime);
+          train: train,
+          curvedValue: curvedValue,
+          left: left,
+          right: right,
+          selectedDepartureTime: selectedDepartureTime,
+          sizes: sizes,
+        );
       },
     );
   }

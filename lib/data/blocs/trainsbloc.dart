@@ -3,98 +3,113 @@ import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/classes/train.dart';
 
+enum Selecting { prev, current, next }
+
 class TrainsBloc {
-  BehaviorSubject<Status> status;
-  BehaviorSubject<DateTime> dateTime;
-  BehaviorSubject<List<Train>> allTrains;
+  final dateTimeInputStream = BehaviorSubject<DateTime>();
+  final allTrainsInputStream = BehaviorSubject<List<Train>>();
 
   var trains = List<Train>();
-  final results = BehaviorSubject.seeded(List<Train>());
-  final index = BehaviorSubject.seeded(0);
-  final nextTrain = BehaviorSubject<Train>();
-  final currentTrain = BehaviorSubject<Train>();
-  final curvedValue = BehaviorSubject.seeded(0.0);
-  Train _prev;
-  Train _next;
 
-  init({newStatus, newDateTime, newAllTrains}) {
-    status = newStatus;
-    dateTime = newDateTime;
-    allTrains = newAllTrains;
-    status.listen((newStatus) {
-      if (newStatus != Status.found) results.add(List<Train>());
-    });
-    allTrains.listen((newTrains) {
-      if (newTrains.isNotEmpty) _trimTrains(newTrains);
-    });
-    dateTime.listen((newDateTime) {
-      if (trains.isNotEmpty) _trimTrains(trains);
-    });
+  var index = 0;
+  var selecting = Selecting.current;
+
+  final results = BehaviorSubject.seeded(List<Train>());
+
+  final controller = BehaviorSubject<PageController>();
+  final valueOutputStream = BehaviorSubject.seeded(0.0);
+  final statusOutputStream = BehaviorSubject<Status>();
+
+  final currentTrainOutputStream = BehaviorSubject<Train>();
+  final selectedTrainOutputStream = BehaviorSubject<Train>();
+
+  updatePage(double newPage) {
+    final newIndex = newPage.round();
+
+    if ((newPage - newIndex).abs() <= 0.01) {
+      if (newIndex >= 0 && newIndex <= results.value.length - 1) {
+        index = newIndex;
+        selecting = Selecting.current;
+        currentTrainOutputStream.add(results.value.elementAt(index));
+        valueOutputStream.add(0.0);
+      }
+    } else {
+      final value = (newPage - index).abs().clamp(0.0, 1.0);
+      final curvedValue = Curves.easeInOut.transform(value);
+
+      if (newPage < index && selecting != Selecting.prev) {
+        selectedTrainOutputStream.add(results.value.elementAt(index - 1));
+        selecting = Selecting.prev;
+      } else if (newPage > index && selecting != Selecting.next) {
+        selectedTrainOutputStream.add(results.value.elementAt(index + 1));
+        selecting = Selecting.next;
+      }
+
+      valueOutputStream.add(curvedValue);
+    }
   }
 
   TrainsBloc() {
-    index.listen((newIndex) {
-      if (results.value.isNotEmpty) {
-        _prev = newIndex > 0 ? results.value.elementAt(newIndex - 1) : null;
-        currentTrain.add(results.value.elementAt(newIndex));
-        _next = newIndex < results.value.length - 1
-            ? results.value.elementAt(newIndex + 1)
-            : null;
-        // nextTrain.add(_next);
-      }
+    allTrainsInputStream.listen((newTrains) {
+      if (newTrains.isNotEmpty) _trimTrains(newTrains);
+    });
+    dateTimeInputStream.listen((newDateTime) {
+      if (trains.isNotEmpty && trains.first.departure.isBefore(newDateTime))
+        _trimTrains(trains);
+    });
+    controller.listen((newController) {
+      newController.addListener(() => updatePage(newController.page));
     });
     results.listen((newTrains) {
-      if (currentTrain.value != null) {
-        final newIndex =
-            newTrains.indexWhere((train) => train.uid == currentTrain.value.uid);
-        if (newIndex > 0)
-          index.add(newIndex);
-        else
-          index.add(0);
+      final oldIndex = index;
+      if (currentTrainOutputStream.value != null) {
+        final newIndex = newTrains.indexWhere(
+            (train) => train.uid == currentTrainOutputStream.value.uid);
+        if (newIndex > 0) index = newIndex;
       } else
-        index.add(0);
+        index = 0;
+      if (controller.value != null &&
+          controller.value.hasClients &&
+          index != oldIndex) {
+        controller.value.animateToPage(index,
+            duration: Duration(milliseconds: 400), curve: Curves.easeInOut);
+      } else
+        updatePage(0.0);
     });
   }
 
   _trimTrains(List<Train> list) {
-    if (list.first.departure.isBefore(dateTime.value)) {
-      final index =
-          list.indexWhere((train) => train.departure.isAfter(dateTime.value));
+    var index = 0;
+    if (list.first.departure.isBefore(dateTimeInputStream.value)) {
+      index = list.indexWhere(
+          (train) => train.departure.isAfter(dateTimeInputStream.value));
       if (index >= 0) {
         final newList = list.sublist(index);
         trains = newList;
       } else
-        status.add(Status.notFound);
+        statusOutputStream.add(Status.notFound);
     } else {
       trains = list;
     }
     if (trains.isNotEmpty) {
-      results.add(trains);
-      if (status.value != Status.found) status.add(Status.found);
-    } else if (status.value != Status.notFound) status.add(Status.notFound);
-  }
-
-  updatePage(double newPage) {
-    final oldIndex = index.value;
-    final newIndex = newPage.round();
-    final value = (newPage - oldIndex).abs().clamp(0.0, 1.0);
-    curvedValue.add(Curves.linear.transform(value));
-    if ((newPage - newIndex).abs() <= 0.01) {
-      if (newIndex >= 0 && newIndex <= results.value.length - 1)
-        index.add(newIndex);
-    } else {
-      final newTrain = newPage < oldIndex ? _prev : _next;
-      if (newTrain != null) {
-        nextTrain.add(newTrain);
-      }
-    }
+      if (controller.value != null && controller.value.hasClients)
+        controller.value
+            .animateToPage(index,
+                duration: Duration(milliseconds: 400), curve: Curves.easeInOut)
+            .then((_) => results.add(trains));
+      else
+        results.add(trains);
+      statusOutputStream.add(Status.found);
+    } else
+      statusOutputStream.add(Status.notFound);
   }
 
   close() {
     results.close();
-    status.close();
-    dateTime.close();
-    nextTrain.close();
-    index.close();
+    statusOutputStream.close();
+    dateTimeInputStream.close();
+
+    controller.close();
+    valueOutputStream.close();
   }
 }

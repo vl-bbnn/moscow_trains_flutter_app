@@ -1,7 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trains/data/blocs/appnavigationbloc.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/data/classes/station.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
@@ -18,7 +18,7 @@ class StationCard extends StatelessWidget {
   }
 
   _stream(context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     switch (type) {
       case QueryType.departure:
         return globalValues.searchBloc.fromStation;
@@ -30,7 +30,7 @@ class StationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stream = _stream(context);
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     final textBloc = globalValues.textBloc;
     final size = MediaQuery.of(context).size;
     return StreamBuilder<Station>(
@@ -42,8 +42,8 @@ class StationCard extends StatelessWidget {
             behavior: HitTestBehavior.translucent,
             onTap: () {
               globalValues.searchBloc.stationType.add(type);
-              globalValues.appNavigationBloc
-                  .nextAppState.add(AppState.StationSelect);
+              globalValues.appNavigationBloc.nextAppState
+                  .add(AppState.StationSelect);
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

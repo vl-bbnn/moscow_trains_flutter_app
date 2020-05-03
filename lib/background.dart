@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/ui/schedulepage/schedulepage.dart';
 import 'package:trains/ui/stationselectpage/stationselectpage.dart';
 import 'data/blocs/appnavigationbloc.dart';
-import 'data/blocs/globalvalues.dart';
 
 class Background extends StatelessWidget {
   final List<AppState> appStates;
+  final Sizes sizes;
 
-  const Background({Key key, this.appStates}) : super(key: key);
+  const Background({Key key, this.appStates, this.sizes}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     AppState oldAppState = AppState.Launch;
 
     return StreamBuilder<AppState>(
@@ -24,12 +26,12 @@ class Background extends StatelessWidget {
           switch (newAppState) {
             case AppState.Launch:
               return Container(
-                // color: Colors.blue,
-              );
+                  // color: Colors.blue,
+                  );
             case AppState.Schedule:
-              return SchedulePage();
+              return SchedulePage(sizes: sizes);
             case AppState.StationSelect:
-              return SuggestionsList();
+              return SuggestionsList(sizes: sizes);
           }
           return Container();
         });

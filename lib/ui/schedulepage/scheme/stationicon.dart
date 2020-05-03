@@ -1,70 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/schedulebloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
+import 'package:trains/data/classes/station.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
 import 'package:trains/ui/common/mysizes.dart';
 
-class StationIcon extends StatefulWidget {
+class StationIcon extends StatelessWidget {
   final Status status;
-  final bool hasTransit;
-  final bool roadTerminal;
-  final bool trainTerminal;
-  final TrainClass trainClass;
-  final double value;
   final QueryType type;
+  final Sizes sizes;
 
   const StationIcon(
-      {this.hasTransit: false,
-      this.roadTerminal: true,
-      this.value: 0.0,
-      this.type: QueryType.departure,
-      this.trainClass: TrainClass.standart,
-      this.trainTerminal: true,
-      this.status: Status.notFound});
+      {this.type: QueryType.departure,
+      this.status: Status.notFound,
+      this.sizes});
 
-  @override
-  _StationIconState createState() => _StationIconState();
-}
-
-class _StationIconState extends State<StationIcon> {
-  double fullHeight;
-  double radius;
-  EdgeInsets zeroPadding;
-  EdgeInsets fullPadding;
-  BorderRadius zeroRadius;
-  BorderRadius fullRadius;
-  Alignment align;
-  Color backColor;
-  Color foreColor;
-
-  update() {
-    radius = SchemeSizes.LINE_WIDTH;
-
-    final onTop = widget.type == QueryType.departure;
-    final stopPadding =
-        EdgeInsets.fromLTRB(radius / 2, radius / 2, 0, radius / 2);
-    final terminalPadding =
-        EdgeInsets.fromLTRB(0, radius / 2, radius / 2, radius / 2);
-    final stopRadius = BorderRadius.only(
-        topLeft: Radius.circular(onTop ? radius / 2 : 0),
-        bottomLeft: Radius.circular(onTop ? 0 : radius / 2),
-        topRight: Radius.circular(2),
-        bottomRight: Radius.circular(2));
-    final terminalRadius = BorderRadius.circular(2);
-
-    zeroPadding = widget.roadTerminal ? terminalPadding : stopPadding;
-    fullPadding = widget.trainTerminal ? terminalPadding : stopPadding;
-
-    zeroRadius = widget.roadTerminal ? terminalRadius : stopRadius;
-    fullRadius = widget.trainTerminal ? terminalRadius : stopRadius;
-
-    backColor = backgroundColor();
-    foreColor = foregroundColor();
+  _valueStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureIconValue;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalIconValue;
+    }
   }
 
-  backgroundColor() {
-    switch (widget.status) {
+  _selectedStream(ScheduleBloc scheduleBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return scheduleBloc.departureSelected;
+      case QueryType.arrival:
+        return scheduleBloc.arrivalSelected;
+    }
+  }
+
+  _stationStream(SearchBloc searchBloc) {
+    switch (type) {
+      case QueryType.departure:
+        return searchBloc.fromStation;
+      case QueryType.arrival:
+        return searchBloc.toStation;
+    }
+  }
+
+  _backgroundColor() {
+    switch (status) {
       case Status.searching:
       case Status.found:
         return MyColors.LE;
@@ -73,8 +56,8 @@ class _StationIconState extends State<StationIcon> {
     }
   }
 
-  foregroundColor() {
-    switch (widget.trainClass) {
+  _foregroundColor(TrainClass trainClass) {
+    switch (trainClass) {
       case TrainClass.standart:
         return MyColors.ST;
       case TrainClass.comfort:
@@ -86,46 +69,103 @@ class _StationIconState extends State<StationIcon> {
 
   @override
   Widget build(BuildContext context) {
-    update();
-    final found = widget.status == Status.found;
-    final color =
-        found ? Color.lerp(backColor, foreColor, widget.value) : backColor;
+    final globalBloc = GlobalBloc.of(context);
+    final backColor = _backgroundColor();
 
-    if (widget.hasTransit)
-      return Padding(
-        padding: EdgeInsets.only(right: radius / 2),
-        child: Container(
-          decoration: ShapeDecoration(shape: CircleBorder(), color: color),
-          width: radius * 2,
-          height: radius * 2,
-          child: Center(
-            child: Container(
-              width: radius,
-              height: radius,
-              decoration: ShapeDecoration(
-                  shape: CircleBorder(), color: MyColors.BACK_PR),
-            ),
-          ),
-        ),
-      );
+    final lineWidth = sizes.schemeLineWidth;
 
-    final padding = found
-        ? EdgeInsets.lerp(zeroPadding, fullPadding, widget.value)
-        : zeroPadding;
+    final onTop = type == QueryType.departure;
+    final stopRadius = BorderRadius.only(
+        topLeft: Radius.circular(onTop ? lineWidth / 2 : 0),
+        bottomLeft: Radius.circular(onTop ? 0 : lineWidth / 2),
+        topRight: Radius.circular(2),
+        bottomRight: Radius.circular(2));
+    final terminalRadius = BorderRadius.circular(2);
 
-    final borderRadius = found
-        ? BorderRadius.lerp(zeroRadius, fullRadius, widget.value)
-        : zeroRadius;
+    final stopPadding =
+        EdgeInsets.fromLTRB(lineWidth / 2, lineWidth / 2, 0, lineWidth / 2);
+    final terminalPadding =
+        EdgeInsets.fromLTRB(0, lineWidth / 2, lineWidth / 2, lineWidth / 2);
 
-    return Padding(
-      padding: padding,
-      child: Container(
-        width: radius * 2,
-        height: radius,
-        decoration: ShapeDecoration(
-            color: color,
-            shape: RoundedRectangleBorder(borderRadius: borderRadius)),
-      ),
-    );
+    return StreamBuilder<Station>(
+        stream: _stationStream(globalBloc.searchBloc),
+        builder: (context, stationSnapshot) {
+          if (!stationSnapshot.hasData) return Container();
+
+          final roadTerminal = stationSnapshot.data.terminal;
+          final hasTransit = stationSnapshot.data.transitList.isNotEmpty;
+          final zeroRadius = roadTerminal ? terminalRadius : stopRadius;
+          final zeroPadding = roadTerminal ? terminalPadding : stopPadding;
+
+          return StreamBuilder<TrainClass>(
+              stream: globalBloc.scheduleBloc.trainClass,
+              builder: (context, trainClassSnapshot) {
+                if (!trainClassSnapshot.hasData) return Container();
+
+                final trainClass = trainClassSnapshot.data;
+                final foreColor = _foregroundColor(trainClass);
+
+                return StreamBuilder<bool>(
+                    stream: _selectedStream(globalBloc.scheduleBloc),
+                    builder: (context, selectedSnapshot) {
+                      if (!selectedSnapshot.hasData) return Container();
+
+                      final selected = selectedSnapshot.data;
+                      final finalRadius =
+                          selected ? terminalRadius : stopRadius;
+                      final finalPadding =
+                          selected ? terminalPadding : stopPadding;
+
+                      return Container(
+                        child: StreamBuilder<double>(
+                            stream: _valueStream(globalBloc.scheduleBloc),
+                            builder: (context, valueSnapshot) {
+                              if (!valueSnapshot.hasData) return Container();
+
+                              final value = valueSnapshot.data;
+                              final radius = BorderRadius.lerp(
+                                  zeroRadius, finalRadius, value);
+                              final padding = EdgeInsets.lerp(
+                                  zeroPadding, finalPadding, value);
+                              final color =
+                                  Color.lerp(backColor, foreColor, value);
+
+                              if (hasTransit)
+                                return Padding(
+                                  padding:
+                                      EdgeInsets.only(right: lineWidth / 2),
+                                  child: Container(
+                                    decoration: ShapeDecoration(
+                                        shape: CircleBorder(), color: color),
+                                    width: lineWidth * 2,
+                                    height: lineWidth * 2,
+                                    child: Center(
+                                      child: Container(
+                                        width: lineWidth,
+                                        height: lineWidth,
+                                        decoration: ShapeDecoration(
+                                            shape: CircleBorder(),
+                                            color: MyColors.BACK_PR),
+                                      ),
+                                    ),
+                                  ),
+                                );
+
+                              return Padding(
+                                padding: padding,
+                                child: Container(
+                                  width: lineWidth * 2,
+                                  height: lineWidth,
+                                  decoration: ShapeDecoration(
+                                      color: color,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: radius)),
+                                ),
+                              );
+                            }),
+                      );
+                    });
+              });
+        });
   }
 }

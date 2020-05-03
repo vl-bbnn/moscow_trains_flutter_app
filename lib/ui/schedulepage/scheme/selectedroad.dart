@@ -1,37 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
 import 'package:trains/ui/common/mysizes.dart';
 
-class SelectedRoad extends StatefulWidget {
+class SelectedRoad extends StatelessWidget {
   final Status status;
-  final double value;
-  final TrainClass trainClass;
+  final Sizes sizes;
 
-  const SelectedRoad(
-      {this.status: Status.notFound,
-      this.value: 0.0,
-      this.trainClass: TrainClass.standart});
-
-  @override
-  _SelectedRoadState createState() => _SelectedRoadState();
-}
-
-class _SelectedRoadState extends State<SelectedRoad> {
-  double fullHeight;
-  Color backColor;
-  Color foreColor;
-
-  update() {
-    backColor = backgroundColor();
-    foreColor = foregroundColor();
-    fullHeight = _fullHeight();
-  }
+  const SelectedRoad({
+    this.status: Status.notFound,
+    this.sizes,
+  });
 
   backgroundColor() {
-    switch (widget.status) {
+    switch (status) {
       case Status.searching:
       case Status.found:
         return MyColors.LE_B70;
@@ -40,8 +25,8 @@ class _SelectedRoadState extends State<SelectedRoad> {
     }
   }
 
-  foregroundColor() {
-    switch (widget.trainClass) {
+  foregroundColor(TrainClass trainClass) {
+    switch (trainClass) {
       case TrainClass.standart:
         return MyColors.ST_B70;
       case TrainClass.comfort:
@@ -51,43 +36,37 @@ class _SelectedRoadState extends State<SelectedRoad> {
     }
   }
 
-  _fullHeight() {
-    final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    final departureFullHeight = padding.top +
-        Helper.height(
-            MainScreenSizes.TOP_PADDING + StationSizes.STATION_HEIGHT / 2,
-            size);
-    final arrivalFullHeight = padding.bottom +
-        Helper.height(
-            MainScreenSizes.BOTTOM_PADDING +
-                NavPanelSizes.PANEL_HEIGHT +
-                NavPanelSizes.BOTTOM_PADDING +
-                StationSizes.STATION_HEIGHT / 2,
-            size);
-    return size.height - departureFullHeight - arrivalFullHeight;
-  }
-
   @override
   Widget build(BuildContext context) {
-    update();
-    final height = fullHeight * widget.value;
-    return Container(
-      height: fullHeight,
-      width: SchemeSizes.LINE_WIDTH,
-      color: backColor,
-      child: widget.status == Status.found
-          ? Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                height: height,
-                color: foreColor,
-                // decoration: ShapeDecoration(
-                //     shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.lerp())),
-              ),
-            )
-          : SizedBox(),
-    );
+    final scheduleBloc = GlobalBloc.of(context).scheduleBloc;
+    final selectedFullHeight = sizes.schemeSelectedHeight;
+    final backColor = backgroundColor();
+    return StreamBuilder<TrainClass>(
+        stream: scheduleBloc.trainClass,
+        builder: (context, trainClassSnapshot) {
+          if (!trainClassSnapshot.hasData) return Container();
+          final trainClass = trainClassSnapshot.data;
+          final foreColor = foregroundColor(trainClass);
+          return StreamBuilder<double>(
+              stream: scheduleBloc.selectedValue,
+              builder: (context, selectedValueSnapshot) {
+                if (!selectedValueSnapshot.hasData) return Container();
+                final height = selectedFullHeight * selectedValueSnapshot.data;
+                return Container(
+                  height: selectedFullHeight,
+                  width: sizes.schemeLineWidth,
+                  color: backColor,
+                  child: status == Status.found
+                      ? Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            height: height,
+                            color: foreColor,
+                          ),
+                        )
+                      : SizedBox(),
+                );
+              });
+        });
   }
 }

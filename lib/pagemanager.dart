@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trains/bottompanel.dart';
 import 'package:trains/data/blocs/appnavigationbloc.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 
 import 'background.dart';
 
@@ -35,63 +36,81 @@ class _PageManagerState extends State<PageManager>
 
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
+
+    globalValues.sizesBloc.contextInputStream.add(MediaQuery.of(context));
+
     pageValueUpdater = () {
       globalValues.appNavigationBloc.pageValue.add(animation.value);
     };
+
     animation.addListener(pageValueUpdater);
-    return StreamBuilder<AppState>(
-        stream: globalValues.appNavigationBloc.nextAppState,
-        builder: (context, nextAppStateSnapshot) {
-          if (!nextAppStateSnapshot.hasData)
-            return Container(
-                // color: Colors.amberAccent,
-                );
-          final nextAppState = nextAppStateSnapshot.data;
 
-          animationController.reverse(from: 1.0).then((_) {
-            globalValues.appNavigationBloc.currentAppState.add(nextAppState);
-            animationController.forward();
-          });
-          // print(appStates.toString());
-          return Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[Background(), BottomPanel()],
+    return StreamBuilder<Sizes>(
+        stream: globalValues.sizesBloc.outputSizes,
+        builder: (context, sizesSnapshot) {
+          if (!sizesSnapshot.hasData) return Container();
+
+          final sizes = sizesSnapshot.data;
+          return Container(
+            child: StreamBuilder<AppState>(
+                stream: globalValues.appNavigationBloc.nextAppState,
+                builder: (context, nextAppStateSnapshot) {
+                  if (!nextAppStateSnapshot.hasData)
+                    return Container(
+                        // color: Colors.amberAccent,
+                        );
+                  final nextAppState = nextAppStateSnapshot.data;
+
+                  animationController.reverse(from: 1.0).then((_) {
+                    globalValues.appNavigationBloc.currentAppState
+                        .add(nextAppState);
+                    animationController.forward();
+                  });
+                  // print(appStates.toString());
+                  return Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: <Widget>[
+                      Background(sizes: sizes),
+                      BottomPanel(sizes: sizes)
+                    ],
+                  );
+                  // final appStates = appStatesSnapshot.data;
+                  // return FutureBuilder<void>(
+                  //     future: animationController.reverse(from: 1.0),
+                  //     builder: (context, closingSnapshot) {
+                  //       globalValues.appNavigationBloc.pageState.add(PageState.closing);
+                  //       if (closingSnapshot.connectionState == ConnectionState.waiting)
+                  //         switch (appStates.elementAt(1)) {
+                  //           case AppState.Launch:
+                  //             return Container(
+                  //               color: Colors.blue,
+                  //             );
+                  //           case AppState.Schedule:
+                  //             return SchedulePage();
+                  //           case AppState.StationSelect:
+                  //             return SuggestionsList();
+                  //         }
+
+                  //       animationController.forward();
+                  //       globalValues.appNavigationBloc.pageState.add(PageState.opening);
+                  //       switch (appStates.elementAt(0)) {
+                  //         case AppState.Launch:
+                  //           return Container(
+                  //             color: Colors.green,
+                  //           );
+                  //         case AppState.Schedule:
+                  //           return SchedulePage();
+                  //         case AppState.StationSelect:
+                  //           return SuggestionsList();
+                  //       }
+
+                  //       return Container(
+                  //         color: Colors.red,
+                  //       );
+                  //     });
+                }),
           );
-          // final appStates = appStatesSnapshot.data;
-          // return FutureBuilder<void>(
-          //     future: animationController.reverse(from: 1.0),
-          //     builder: (context, closingSnapshot) {
-          //       globalValues.appNavigationBloc.pageState.add(PageState.closing);
-          //       if (closingSnapshot.connectionState == ConnectionState.waiting)
-          //         switch (appStates.elementAt(1)) {
-          //           case AppState.Launch:
-          //             return Container(
-          //               color: Colors.blue,
-          //             );
-          //           case AppState.Schedule:
-          //             return SchedulePage();
-          //           case AppState.StationSelect:
-          //             return SuggestionsList();
-          //         }
-
-          //       animationController.forward();
-          //       globalValues.appNavigationBloc.pageState.add(PageState.opening);
-          //       switch (appStates.elementAt(0)) {
-          //         case AppState.Launch:
-          //           return Container(
-          //             color: Colors.green,
-          //           );
-          //         case AppState.Schedule:
-          //           return SchedulePage();
-          //         case AppState.StationSelect:
-          //           return SuggestionsList();
-          //       }
-
-          //       return Container(
-          //         color: Colors.red,
-          //       );
-          //     });
         });
   }
 }

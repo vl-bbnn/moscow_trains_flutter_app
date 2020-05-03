@@ -2,15 +2,17 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/data/blocs/appnavigationbloc.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/ui/common/mycolors.dart';
 import 'package:trains/ui/schedulepage/navpanel.dart';
 import 'package:trains/ui/stationselectpage/stationinput.dart';
 
 class BottomPanel extends StatefulWidget {
   final List<AppState> appStates;
+  final Sizes sizes;
 
-  const BottomPanel({Key key, this.appStates}) : super(key: key);
+  const BottomPanel({Key key, this.appStates, this.sizes}) : super(key: key);
 
   @override
   _BottomPanelState createState() => _BottomPanelState();
@@ -60,7 +62,7 @@ class _BottomPanelState extends State<BottomPanel> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final globalValues = GlobalValues.of(context);
+    final globalValues = GlobalBloc.of(context);
     final size = MediaQuery.of(context).size;
     AppState oldAppState = AppState.Launch;
 
@@ -91,9 +93,9 @@ class _BottomPanelState extends State<BottomPanel> with WidgetsBindingObserver {
                     case AppState.Launch:
                       return Container();
                     case AppState.Schedule:
-                      return NavigationButtons();
+                      return NavigationButtons(sizes: widget.sizes);
                     case AppState.StationSelect:
-                      return StationInput();
+                      return StationInput(sizes: widget.sizes);
                   }
                   return Container();
                 }),

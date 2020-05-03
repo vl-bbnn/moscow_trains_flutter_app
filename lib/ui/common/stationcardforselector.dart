@@ -2,7 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:trains/data/blocs/globalvalues.dart';
+import 'package:trains/data/blocs/globalbloc.dart';
 import 'package:trains/data/classes/station.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
@@ -40,7 +40,7 @@ class StationCardForSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final textBloc = GlobalValues.of(context).textBloc;
+    final textBloc = GlobalBloc.of(context).textBloc;
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Stack(

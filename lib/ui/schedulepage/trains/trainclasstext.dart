@@ -1,13 +1,13 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/train.dart';
-import 'package:trains/common/helper.dart';
-import 'package:trains/ui/common/mysizes.dart';
-import 'package:trains/ui/schedulepage/traindot.dart';
+import 'package:trains/ui/schedulepage/trains/traindot.dart';
 
 class TrainClassText extends StatelessWidget {
   final train;
   final curvedValue;
+  final Sizes sizes;
 
   _classText() {
     switch (train.trainClass) {
@@ -20,25 +20,20 @@ class TrainClassText extends StatelessWidget {
     }
   }
 
-  TrainClassText({this.train, this.curvedValue});
+  TrainClassText({this.train, this.curvedValue, this.sizes});
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final hasData = train != null;
     final textGroup = AutoSizeGroup();
     final classText = hasData ? _classText() : null;
     final price = hasData
         ? train.price != null ? (curvedValue * train.price).round() : 0
         : null;
-    final priceTextWidth =
-        Helper.width(curvedValue * SelectedTrainSizes.PRICE_TEXT_WIDTH, size);
-    final dotPadding =
-        Helper.width(curvedValue * SelectedTrainSizes.DOT_PADDING, size);
-    final classTextWidth =
-        Helper.width(curvedValue * SelectedTrainSizes.CLASS_TEXT_WIDTH, size);
-    final textHeight =
-        Helper.height(curvedValue * SelectedTrainSizes.TEXT_HEIGHT, size);
+    final priceTextWidth = sizes.selectedTrainPriceTextWidth * curvedValue;
+    final dotPadding = sizes.selectedTrainIconPadding * curvedValue;
+    final classTextWidth = sizes.selectedTrainClassTextWidth * curvedValue;
+    final textHeight = sizes.selectedTrainTextHeight * curvedValue;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
@@ -49,13 +44,6 @@ class TrainClassText extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                TrainDot(
-                  curvedValue: curvedValue,
-                  train: train,
-                ),
-                SizedBox(
-                  width: dotPadding,
-                ),
                 Opacity(
                   opacity: curvedValue,
                   child: Container(
