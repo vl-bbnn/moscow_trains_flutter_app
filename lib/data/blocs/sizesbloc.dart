@@ -2,7 +2,91 @@ import 'package:flutter/material.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:trains/ui/common/mysizes.dart';
 
+class RegularTrainCardSizes {
+  double outerPadding;
+
+  double cardHeight;
+  double cardWidth;
+
+  double verticalPadding;
+  double horizontalPadding;
+
+  double textHeight;
+  double textWidth;
+
+  double iconWidth;
+  double iconHeight;
+
+  double iconTextPadding;
+
+  RegularTrainCardSizes.fromData(
+      MediaQueryData data, height(double value), width(double value)) {
+    outerPadding = width(RegularTrainSizes.OUTER_PADDING);
+
+    cardHeight = height(RegularTrainSizes.CARD_HEIGHT);
+    cardWidth = width(RegularTrainSizes.CARD_WIDTH);
+
+    verticalPadding = height(RegularTrainSizes.VERTICAL_PADDING);
+    horizontalPadding = width(RegularTrainSizes.HORIZONTAL_PADDING);
+
+    textHeight = height(RegularTrainSizes.TEXT_HEIGHT);
+    textWidth = width(RegularTrainSizes.TEXT_WIDTH);
+
+    iconHeight = height(RegularTrainSizes.ICON_HEIGHT);
+    iconWidth = width(RegularTrainSizes.ICON_WIDTH);
+
+    iconTextPadding = height(RegularTrainSizes.ICON_TEXT_PADDING);
+  }
+}
+
+class SelectedTrainCardSizes {
+  double outerPadding;
+
+  double cardHeight;
+  double cardWidth;
+
+  double verticalPadding;
+  double horizontalPadding;
+
+  double textHeight;
+  double textWidth;
+  double priceTextWidth;
+  double stopsTextWidth;
+  double timeTextWidth;
+
+  double textPadding;
+
+  double iconWidth;
+  double iconHeight;
+
+  double iconTextPadding;
+
+  SelectedTrainCardSizes.fromData(
+      MediaQueryData data, height(double value), width(double value)) {
+    outerPadding = width(SelectedTrainSizes.OUTER_PADDING);
+
+    cardHeight = height(SelectedTrainSizes.CARD_HEIGHT);
+    cardWidth = width(SelectedTrainSizes.CARD_WIDTH);
+
+    verticalPadding = height(SelectedTrainSizes.VERTICAL_PADDING);
+    horizontalPadding = width(SelectedTrainSizes.HORIZONTAL_PADDING);
+
+    textHeight = height(SelectedTrainSizes.TEXT_HEIGHT);
+    textWidth = width(SelectedTrainSizes.TEXT_WIDTH);
+
+    textPadding = height(SelectedTrainSizes.TEXT_PADDING);
+
+    iconHeight = height(SelectedTrainSizes.ICON_HEIGHT);
+    iconWidth = width(SelectedTrainSizes.ICON_WIDTH);
+
+    iconTextPadding = width(SelectedTrainSizes.ICON_TEXT_PADDING);
+  }
+}
+
 class Sizes {
+  RegularTrainCardSizes regularTrain;
+  SelectedTrainCardSizes selectedTrain;
+
   double fullHeight;
   double fullWidth;
   double topPadding;
@@ -43,35 +127,6 @@ class Sizes {
   double stationIconTextWidth;
   double stationIconTextPadding;
   double stationTextPadding;
-
-  //Regular Train Sizes
-
-  double regularTrainCardHeight;
-  double regularTrainCardWidth;
-  double regularTrainVerticalPadding;
-  double regularTrainHorizontalPadding;
-  double regularTrainOuterPadding;
-  double regularTrainTextHeight;
-  double regularTrainTextWidth;
-  double regularTrainIconSize;
-  double regularTrainIconGlow;
-  double regularTrainContentPadding;
-
-  //Selected Train Sizes
-
-  double selectedTrainCardHeight;
-  double selectedTrainCardWidth;
-  double selectedTrainVerticalPadding;
-  double selectedTrainHorizontalPadding;
-  double selectedTrainTextHeight;
-  double selectedTrainClassTextWidth;
-  double selectedTrainPriceTextWidth;
-  double selectedTrainStopsTextWidth;
-  double selectedTrainTimeTextWidth;
-  double selectedTrainIconSize;
-  double selectedTrainIconGlow;
-  double selectedTrainIconPadding;
-  double selectedTrainContentPadding;
 
   //Time Sizes
 
@@ -124,6 +179,9 @@ class Sizes {
             NavPanelSizes.OUTER_BOTTOM_PADDING + NavPanelSizes.PANEL_HEIGHT) +
         contextPadding.bottom;
 
+    regularTrain = RegularTrainCardSizes.fromData(data, height, width);
+    selectedTrain = SelectedTrainCardSizes.fromData(data, height, width);
+
     //Scheme Sizes
 
     schemeDepartureHeight = contextPadding.top +
@@ -171,42 +229,6 @@ class Sizes {
     stationIconTextPadding = width(StationSizes.SMALL_PADDING);
     stationTextPadding = height(StationSizes.BIG_PADDING);
 
-    //Regular Train Sizes
-
-    regularTrainCardHeight = height(RegularTrainSizes.CARD_HEIGHT);
-    regularTrainCardWidth = width(RegularTrainSizes.CARD_WIDTH);
-
-    regularTrainVerticalPadding = height(RegularTrainSizes.VERTICAL_PADDING);
-    regularTrainContentPadding = height(RegularTrainSizes.CONTENT_PADDING);
-    regularTrainHorizontalPadding = width(RegularTrainSizes.HORIZONTAL_PADDING);
-    regularTrainOuterPadding = width(RegularTrainSizes.OUTER_PADDING);
-
-    regularTrainTextHeight = height(RegularTrainSizes.TEXT_HEIGHT);
-    regularTrainTextWidth = width(RegularTrainSizes.TEXT_WIDTH);
-
-    regularTrainIconSize = size(RegularTrainSizes.DOT_SIZE);
-    regularTrainIconGlow = size(RegularTrainSizes.DOT_GLOW);
-
-    //Selected Train Sizes
-
-    selectedTrainCardHeight = height(SelectedTrainSizes.CARD_HEIGHT);
-    selectedTrainCardWidth = width(SelectedTrainSizes.CARD_WIDTH);
-
-    selectedTrainVerticalPadding = height(SelectedTrainSizes.VERTICAL_PADDING);
-    selectedTrainHorizontalPadding =
-        width(SelectedTrainSizes.HORIZONTAL_PADDING);
-    selectedTrainContentPadding = height(SelectedTrainSizes.CONTENT_PADDING);
-
-    selectedTrainTextHeight = height(SelectedTrainSizes.TEXT_HEIGHT);
-    selectedTrainClassTextWidth = width(SelectedTrainSizes.CLASS_TEXT_WIDTH);
-    selectedTrainPriceTextWidth = width(SelectedTrainSizes.PRICE_TEXT_WIDTH);
-    selectedTrainStopsTextWidth = width(SelectedTrainSizes.STOPS_TEXT_WIDTH);
-    selectedTrainTimeTextWidth = width(SelectedTrainSizes.TIME_TEXT_WIDTH);
-
-    selectedTrainIconSize = size(SelectedTrainSizes.DOT_SIZE);
-    selectedTrainIconGlow = size(SelectedTrainSizes.DOT_GLOW);
-    selectedTrainIconPadding = size(SelectedTrainSizes.DOT_PADDING);
-
     //Time Sizes
 
     timeHeight = height(TimeSizes.TIME_HEIGHT);
@@ -229,7 +251,7 @@ class Sizes {
             scheduleBottomPadding -
             2 * stationHeight -
             2 * timeHeight -
-            selectedTrainCardHeight) /
+            selectedTrain.cardHeight) /
         4;
     scheduleSelectorTopOffset = scheduleTopPadding +
         stationHeight +

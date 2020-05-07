@@ -48,6 +48,9 @@ flutter:
   - assets/types/ex.png
   - assets/types/st.png
   - assets/types/cm.png
+  - assets/types/ex_notext.png
+  - assets/types/st_notext.png
+  - assets/types/cm_notext.png
   - assets/types/d2.png
   - assets/types/d3.png
   - assets/maps/s2006004.png

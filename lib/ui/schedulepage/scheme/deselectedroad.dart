@@ -7,7 +7,6 @@ import 'package:trains/data/classes/station.dart';
 import 'package:trains/data/classes/train.dart';
 import 'package:trains/common/helper.dart';
 import 'package:trains/ui/common/mycolors.dart';
-import 'package:trains/ui/common/mysizes.dart';
 
 class DeselectedRoad extends StatelessWidget {
   final Status status;

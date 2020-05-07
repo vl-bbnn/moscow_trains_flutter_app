@@ -18,8 +18,8 @@ class TimeText extends StatefulWidget {
 
   const TimeText(
       {this.time,
-      this.width: 100.0,
-      this.height: 16.0,
+      this.width,
+      this.height,
       this.shouldWarn: false,
       this.textAlign: TextAlign.start,
       this.align: Alignment.centerLeft,

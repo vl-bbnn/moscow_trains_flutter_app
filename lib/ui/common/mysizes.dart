@@ -48,36 +48,48 @@ class StationSizes {
 
 class TimeSizes {
   static const TIME_HEIGHT = 36.0;
+
   static const TIME_LEFT_TEXT_WIDTH = 90.0;
+
   static const LABEL_TEXT_WIDTH = 90.0;
+  
   static const TIME_TEXT_WIDTH = 90.0;
 }
 
 class RegularTrainSizes {
+  static const OUTER_PADDING = 7.5;
+
   static const CARD_HEIGHT = 94.0;
-  static const CARD_WIDTH = 84.0;
+  static const CARD_WIDTH = 104.0;
+
   static const VERTICAL_PADDING = 20.0;
-  static const HORIZONTAL_PADDING = 10.0;
-  static const OUTER_PADDING = 15.0;
-  static const TEXT_HEIGHT = 30.0;
-  static const TEXT_WIDTH = 42.0;
-  static const DOT_SIZE = 8.0;
-  static const DOT_GLOW = 12.0;
-  static const CONTENT_PADDING = 10.0;
+  static const HORIZONTAL_PADDING = 15.0;
+
+  static const TEXT_HEIGHT = 32.0;
+  static const TEXT_WIDTH = 74.0;
+
+  static const ICON_WIDTH = 24.0;
+  static const ICON_HEIGHT = 12.0;
+
+  static const ICON_TEXT_PADDING = 10.0;
 }
 
 class SelectedTrainSizes {
+  static const OUTER_PADDING = 7.5;
+
   static const CARD_HEIGHT = 128.0;
-  static const CARD_WIDTH = 202.0;
+  static const CARD_WIDTH = 197.0;
+
   static const VERTICAL_PADDING = 25.0;
-  static const HORIZONTAL_PADDING = 25.0;
+  static const HORIZONTAL_PADDING = 20.0;
+
+  static const TEXT_WIDTH = 115.0;
   static const TEXT_HEIGHT = 16.0;
-  static const CLASS_TEXT_WIDTH = 80.0;
-  static const PRICE_TEXT_WIDTH = 40.0;
-  static const STOPS_TEXT_WIDTH = 100.0;
-  static const TIME_TEXT_WIDTH = 100.0;
-  static const DOT_SIZE = 10.0;
-  static const DOT_GLOW = 14.0;
-  static const CONTENT_PADDING = 15.0;
-  static const DOT_PADDING = 10.0;
+
+  static const ICON_WIDTH = 24.0;
+  static const ICON_HEIGHT = 12.0;
+
+  static const TEXT_PADDING = 15.0;
+
+  static const ICON_TEXT_PADDING = 15.0;
 }

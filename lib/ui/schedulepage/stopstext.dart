@@ -8,7 +8,7 @@ class StopsText extends StatelessWidget {
   final width;
   final height;
 
-  const StopsText({this.stops: 0, this.width: 100.0, this.height: 16});
+  const StopsText({this.stops: 0, this.width, this.height});
 
   _textStyle(selected, context) {
     if (selected)

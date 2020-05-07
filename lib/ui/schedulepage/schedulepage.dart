@@ -61,7 +61,7 @@ class SchedulePage extends StatelessWidget {
                             height: sizes.scheduleSpace,
                           ),
                           SizedBox(
-                            height: sizes.selectedTrainCardHeight,
+                            height: sizes.selectedTrain.cardHeight,
                             child: status == Status.found
                                 ? Container()
                                 : Align(

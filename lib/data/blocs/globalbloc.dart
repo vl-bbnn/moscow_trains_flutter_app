@@ -22,12 +22,9 @@ class GlobalBloc extends InheritedWidget {
   final status = BehaviorSubject.seeded(Status.notFound);
 
   GlobalBloc({@required Widget child}) : super(child: child) {
-    trainsBloc.selectedTrainOutputStream
-        .listen((train) => scheduleBloc.selectedTrainInputStream.add(train));
-    trainsBloc.currentTrainOutputStream
-        .listen((train) => scheduleBloc.currentTrainInputStream.add(train));
-    trainsBloc.valueOutputStream
-        .listen((value) => scheduleBloc.valueInputStream.add(value));
+    trainsBloc.scheduleDataOutputStream.listen((newData) {
+      scheduleBloc.scheduleDataInputStream.add(newData);
+    });
 
     suggestionsBloc.updateCallback(newCallback: (newStation) {
       searchBloc.updateStation(newStation);
@@ -41,8 +38,6 @@ class GlobalBloc extends InheritedWidget {
         .listen((value) => trainsBloc.dateTimeInputStream.add(value));
     searchBloc.allTrains
         .listen((value) => trainsBloc.allTrainsInputStream.add(value));
-    // searchBloc.dateTime
-    //     .listen((newDateTime) => scheduleBloc.updateCurrentTime(newDateTime));
     searchBloc.fromStation.listen((fromStation) {
       suggestionsBloc.updateFrom(newCode: fromStation.code);
     });
@@ -52,8 +47,10 @@ class GlobalBloc extends InheritedWidget {
     searchBloc.stationType
         .listen((type) => suggestionsBloc.updateType(newType: type));
 
-    sizesBloc.outputSizes
-        .listen((newValue) => scheduleBloc.inputSizes.add(newValue));
+    sizesBloc.outputSizes.listen((newValue) {
+      scheduleBloc.inputSizes.add(newValue);
+      trainsBloc.inputSizes.add(newValue);
+    });
 
     stationsBloc.init().then((_) {
       if (stationsBloc.allStations.value != null &&

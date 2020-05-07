@@ -1,51 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
+import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/classes/train.dart';
 
 enum Selecting { prev, current, next }
 
+class ScheduleData {
+  final Train currentTrain;
+  final Train nextTrain;
+
+  final double totalValue;
+  final double collapseValue;
+  final double moveValue;
+  final double expandValue;
+
+  ScheduleData(
+      {this.currentTrain,
+      this.nextTrain,
+      this.totalValue,
+      this.collapseValue,
+      this.moveValue,
+      this.expandValue});
+}
+
 class TrainsBloc {
   final dateTimeInputStream = BehaviorSubject<DateTime>();
   final allTrainsInputStream = BehaviorSubject<List<Train>>();
+  final inputSizes = BehaviorSubject<Sizes>();
+
+  Sizes sizes;
 
   var trains = List<Train>();
 
-  var index = 0;
-  var selecting = Selecting.current;
-
   final results = BehaviorSubject.seeded(List<Train>());
 
-  final controller = BehaviorSubject<PageController>();
-  final valueOutputStream = BehaviorSubject.seeded(0.0);
+  final controller = ScrollController();
+  final scheduleDataOutputStream = BehaviorSubject<ScheduleData>();
   final statusOutputStream = BehaviorSubject<Status>();
 
-  final currentTrainOutputStream = BehaviorSubject<Train>();
-  final selectedTrainOutputStream = BehaviorSubject<Train>();
+  double startOffset = 0.0;
 
-  updatePage(double newPage) {
-    final newIndex = newPage.round();
+  double collapsePercent = 0.25;
+  double movePercent = 0.5;
+  double expandPercent = 0.25;
 
-    if ((newPage - newIndex).abs() <= 0.01) {
-      if (newIndex >= 0 && newIndex <= results.value.length - 1) {
-        index = newIndex;
-        selecting = Selecting.current;
-        currentTrainOutputStream.add(results.value.elementAt(index));
-        valueOutputStream.add(0.0);
-      }
-    } else {
-      final value = (newPage - index).abs().clamp(0.0, 1.0);
-      final curvedValue = Curves.easeInOut.transform(value);
+  double trainOffset = 0.0;
 
-      if (newPage < index && selecting != Selecting.prev) {
-        selectedTrainOutputStream.add(results.value.elementAt(index - 1));
-        selecting = Selecting.prev;
-      } else if (newPage > index && selecting != Selecting.next) {
-        selectedTrainOutputStream.add(results.value.elementAt(index + 1));
-        selecting = Selecting.next;
-      }
+  int currentIndex = 0;
+  int nextIndex = 1;
 
-      valueOutputStream.add(curvedValue);
+  dragStart() {
+    startOffset = controller.offset;
+  }
+
+  double dragUpdate(double delta) {
+    if (sizes != null) {
+      currentIndex = (startOffset / trainOffset)
+          .round()
+          .clamp(0, results.value.length - 1);
+
+      nextIndex = ((startOffset - trainOffset * delta.sign) / trainOffset)
+          .round()
+          .clamp(0, results.value.length - 1);
+
+      final endOffset = nextIndex * trainOffset;
+
+      final percent = endOffset != startOffset
+          ? (delta / (endOffset - startOffset).abs())
+          : 0.0;
+
+      dragPercent(percent);
+
+      return percent;
+    } else
+      return 0.0;
+  }
+
+  dragPercent(double percent) {
+    if (results.value != null && results.value.length > 0) {
+      final currentTrain = results.value.elementAt(currentIndex);
+
+      final nextTrain = results.value.elementAt(nextIndex);
+
+      final totalValue = percent.abs();
+
+      final collapseValue =
+          (percent.abs().clamp(0.0, collapsePercent)) / collapsePercent;
+
+      final moveValue =
+          (percent.abs() - collapsePercent).clamp(0.0, movePercent) /
+              movePercent;
+
+      final newOffset = startOffset - moveValue * trainOffset * percent.sign;
+      if (newOffset > -trainOffset * 0.25 && controller.hasClients)
+        controller.jumpTo(newOffset);
+
+      final expandValue = (percent.abs() - collapsePercent - movePercent)
+              .clamp(0.0, expandPercent) /
+          expandPercent;
+
+      final newScheduleData = ScheduleData(
+          currentTrain: currentTrain,
+          nextTrain: nextTrain,
+          totalValue: totalValue,
+          collapseValue: collapseValue,
+          moveValue: moveValue,
+          expandValue: expandValue);
+
+      scheduleDataOutputStream.add(newScheduleData);
     }
   }
 
@@ -53,63 +116,52 @@ class TrainsBloc {
     allTrainsInputStream.listen((newTrains) {
       if (newTrains.isNotEmpty) _trimTrains(newTrains);
     });
+
     dateTimeInputStream.listen((newDateTime) {
       if (trains.isNotEmpty && trains.first.departure.isBefore(newDateTime))
         _trimTrains(trains);
     });
-    controller.listen((newController) {
-      newController.addListener(() => updatePage(newController.page));
-    });
-    results.listen((newTrains) {
-      final oldIndex = index;
-      if (currentTrainOutputStream.value != null) {
-        final newIndex = newTrains.indexWhere(
-            (train) => train.uid == currentTrainOutputStream.value.uid);
-        if (newIndex > 0) index = newIndex;
-      } else
-        index = 0;
-      if (controller.value != null &&
-          controller.value.hasClients &&
-          index != oldIndex) {
-        controller.value.animateToPage(index,
-            duration: Duration(milliseconds: 400), curve: Curves.easeInOut);
-      } else
-        updatePage(0.0);
+
+    inputSizes.listen((newSizes) {
+      sizes = newSizes;
+      trainOffset =
+          sizes.regularTrain.cardWidth + 2 * sizes.regularTrain.outerPadding;
+      dragPercent(0.0);
     });
   }
 
   _trimTrains(List<Train> list) {
-    var index = 0;
-    if (list.first.departure.isBefore(dateTimeInputStream.value)) {
-      index = list.indexWhere(
-          (train) => train.departure.isAfter(dateTimeInputStream.value));
-      if (index >= 0) {
-        final newList = list.sublist(index);
-        trains = newList;
+    final dateTime = dateTimeInputStream.value ?? DateTime.now();
+
+    if (list.first.departure.isBefore(dateTime)) {
+      final index =
+          list.indexWhere((train) => train.departure.isAfter(dateTime));
+
+      if (index > 0) {
+        trains = list.sublist(index);
+
+        statusOutputStream.add(Status.found);
+
+        results.add(trains);
       } else
         statusOutputStream.add(Status.notFound);
     } else {
       trains = list;
-    }
-    if (trains.isNotEmpty) {
-      if (controller.value != null && controller.value.hasClients)
-        controller.value
-            .animateToPage(index,
-                duration: Duration(milliseconds: 400), curve: Curves.easeInOut)
-            .then((_) => results.add(trains));
-      else
-        results.add(trains);
+
       statusOutputStream.add(Status.found);
-    } else
-      statusOutputStream.add(Status.notFound);
+
+      results.add(trains);
+
+      dragPercent(0.0);
+    }
   }
 
   close() {
     results.close();
     statusOutputStream.close();
     dateTimeInputStream.close();
+    inputSizes.close();
 
-    controller.close();
-    valueOutputStream.close();
+    scheduleDataOutputStream.close();
   }
 }
