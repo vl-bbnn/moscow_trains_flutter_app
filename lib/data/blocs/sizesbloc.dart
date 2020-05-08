@@ -20,22 +20,22 @@ class RegularTrainCardSizes {
   double iconTextPadding;
 
   RegularTrainCardSizes.fromData(
-      MediaQueryData data, height(double value), width(double value)) {
-    outerPadding = width(RegularTrainSizes.OUTER_PADDING);
+      {MediaQueryData data, height(double value), width(double value)}) {
+    outerPadding = width(RegularTrainConstants.OUTER_PADDING);
 
-    cardHeight = height(RegularTrainSizes.CARD_HEIGHT);
-    cardWidth = width(RegularTrainSizes.CARD_WIDTH);
+    cardHeight = height(RegularTrainConstants.CARD_HEIGHT);
+    cardWidth = width(RegularTrainConstants.CARD_WIDTH);
 
-    verticalPadding = height(RegularTrainSizes.VERTICAL_PADDING);
-    horizontalPadding = width(RegularTrainSizes.HORIZONTAL_PADDING);
+    verticalPadding = height(RegularTrainConstants.VERTICAL_PADDING);
+    horizontalPadding = width(RegularTrainConstants.HORIZONTAL_PADDING);
 
-    textHeight = height(RegularTrainSizes.TEXT_HEIGHT);
-    textWidth = width(RegularTrainSizes.TEXT_WIDTH);
+    textHeight = height(RegularTrainConstants.TEXT_HEIGHT);
+    textWidth = width(RegularTrainConstants.TEXT_WIDTH);
 
-    iconHeight = height(RegularTrainSizes.ICON_HEIGHT);
-    iconWidth = width(RegularTrainSizes.ICON_WIDTH);
+    iconHeight = height(RegularTrainConstants.ICON_HEIGHT);
+    iconWidth = width(RegularTrainConstants.ICON_WIDTH);
 
-    iconTextPadding = height(RegularTrainSizes.ICON_TEXT_PADDING);
+    iconTextPadding = height(RegularTrainConstants.ICON_TEXT_PADDING);
   }
 }
 
@@ -62,58 +62,96 @@ class SelectedTrainCardSizes {
   double iconTextPadding;
 
   SelectedTrainCardSizes.fromData(
-      MediaQueryData data, height(double value), width(double value)) {
-    outerPadding = width(SelectedTrainSizes.OUTER_PADDING);
+      {MediaQueryData data, height(double value), width(double value)}) {
+    outerPadding = width(SelectedTrainConstants.OUTER_PADDING);
 
-    cardHeight = height(SelectedTrainSizes.CARD_HEIGHT);
-    cardWidth = width(SelectedTrainSizes.CARD_WIDTH);
+    cardHeight = height(SelectedTrainConstants.CARD_HEIGHT);
+    cardWidth = width(SelectedTrainConstants.CARD_WIDTH);
 
-    verticalPadding = height(SelectedTrainSizes.VERTICAL_PADDING);
-    horizontalPadding = width(SelectedTrainSizes.HORIZONTAL_PADDING);
+    verticalPadding = height(SelectedTrainConstants.VERTICAL_PADDING);
+    horizontalPadding = width(SelectedTrainConstants.HORIZONTAL_PADDING);
 
-    textHeight = height(SelectedTrainSizes.TEXT_HEIGHT);
-    textWidth = width(SelectedTrainSizes.TEXT_WIDTH);
+    textHeight = height(SelectedTrainConstants.TEXT_HEIGHT);
+    textWidth = width(SelectedTrainConstants.TEXT_WIDTH);
 
-    textPadding = height(SelectedTrainSizes.TEXT_PADDING);
+    textPadding = height(SelectedTrainConstants.TEXT_PADDING);
 
-    iconHeight = height(SelectedTrainSizes.ICON_HEIGHT);
-    iconWidth = width(SelectedTrainSizes.ICON_WIDTH);
+    iconHeight = height(SelectedTrainConstants.ICON_HEIGHT);
+    iconWidth = width(SelectedTrainConstants.ICON_WIDTH);
 
-    iconTextPadding = width(SelectedTrainSizes.ICON_TEXT_PADDING);
+    iconTextPadding = width(SelectedTrainConstants.ICON_TEXT_PADDING);
+  }
+}
+
+class SchemeSizes {
+  double totalWidth;
+  double leftPadding;
+
+  double departureRoadHeight;
+  double arrivalRoadHeight;
+  double trainRoadHeight;
+  double iconSize;
+
+  double roadPercent;
+  double trainPercent;
+  double iconPercent;
+
+  double textWidth;
+  double textHeight;
+  double textVerticalPadding;
+  double textPadding;
+
+  double lineWidth;
+  double lineLeftPadding;
+  double lineRightPadding;
+
+  SchemeSizes.fromData(
+      {MediaQueryData data,
+      EdgeInsets contextPadding,
+      double fullHeight,
+      height(double value),
+      width(double value),
+      size(double value)}) {
+    departureRoadHeight = contextPadding.top +
+        height(MainScreenConstants.TOP_PADDING +
+            StationConstants.STATION_HEIGHT / 2);
+
+    arrivalRoadHeight = contextPadding.bottom +
+        height(MainScreenConstants.BOTTOM_PADDING +
+            NavPanelConstants.PANEL_HEIGHT +
+            NavPanelConstants.BOTTOM_PADDING +
+            StationConstants.STATION_HEIGHT / 2);
+    iconSize = size(SchemeConstants.LINE_WIDTH * 2);
+
+    trainRoadHeight = fullHeight - departureRoadHeight - arrivalRoadHeight;
+
+    roadPercent = (departureRoadHeight + arrivalRoadHeight) / (fullHeight * 2);
+    trainPercent = trainRoadHeight / fullHeight;
+    iconPercent = iconSize / fullHeight;
+
+    leftPadding = width(SchemeConstants.LEFT_PADDING);
+    totalWidth = width(SchemeConstants.SCHEME_WIDTH);
+
+    //rotated by 90 degreees
+    textWidth = width(SchemeConstants.TEXT_HEIGHT);
+    textHeight = height(SchemeConstants.TEXT_WIDTH);
+    textVerticalPadding = height(SchemeConstants.TEXT_VERTICAL_PADDING);
+
+    lineWidth = width(SchemeConstants.LINE_WIDTH);
+    lineLeftPadding = width(SchemeConstants.LINE_LEFT_PADDING);
+    lineRightPadding = width(SchemeConstants.LINE_RIGHT_PADDING);
   }
 }
 
 class Sizes {
   RegularTrainCardSizes regularTrain;
   SelectedTrainCardSizes selectedTrain;
+  SchemeSizes scheme;
 
   double fullHeight;
   double fullWidth;
   double topPadding;
   double bottomPadding;
-
-  //Scheme Sizes
-
-  double schemeDepartureHeight;
-  double schemeleArrivalHeight;
-  double schemeIconSize;
-  double schemeSelectedHeight;
-
-  double schemeDeparturePercent;
-  double schemeArrivalPercent;
-  double schemeSelectedPercent;
-  double schemeIconPercent;
-
-  double schemeLeftPadding;
-  double schemeWidth;
-
-  double schemeTextHeight;
-  double schemeTextWidth;
-  double schemeTextVerticalPadding;
-
-  double schemeLineWidth;
-  double schemeLineLeftPadding;
-  double schemeLineRightPadding;
 
   //Station Sizes
 
@@ -160,91 +198,71 @@ class Sizes {
     final contextSize = data.size;
 
     final width =
-        (double value) => contextSize.width * (value / CommonSizes.WIDTH);
+        (double value) => contextSize.width * (value / CommonConstants.WIDTH);
     final height =
-        (double value) => contextSize.height * (value / CommonSizes.HEIGHT);
+        (double value) => contextSize.height * (value / CommonConstants.HEIGHT);
     final size = (double value) {
       if (contextSize.width < contextSize.height)
-        return contextSize.width * (value / CommonSizes.WIDTH);
+        return contextSize.width * (value / CommonConstants.WIDTH);
       else
-        return contextSize.height * (value / CommonSizes.HEIGHT);
+        return contextSize.height * (value / CommonConstants.HEIGHT);
     };
 
     final contextPadding = data.padding;
 
-    fullHeight = height(CommonSizes.HEIGHT);
-    fullWidth = width(CommonSizes.WIDTH);
+    fullHeight = height(CommonConstants.HEIGHT);
+    fullWidth = width(CommonConstants.WIDTH);
     topPadding = contextPadding.top;
-    bottomPadding = height(
-            NavPanelSizes.OUTER_BOTTOM_PADDING + NavPanelSizes.PANEL_HEIGHT) +
+    bottomPadding = height(NavPanelConstants.OUTER_BOTTOM_PADDING +
+            NavPanelConstants.PANEL_HEIGHT) +
         contextPadding.bottom;
 
-    regularTrain = RegularTrainCardSizes.fromData(data, height, width);
-    selectedTrain = SelectedTrainCardSizes.fromData(data, height, width);
-
-    //Scheme Sizes
-
-    schemeDepartureHeight = contextPadding.top +
-        height(MainScreenSizes.TOP_PADDING + StationSizes.STATION_HEIGHT / 2);
-    schemeleArrivalHeight = contextPadding.bottom +
-        height(MainScreenSizes.BOTTOM_PADDING +
-            NavPanelSizes.PANEL_HEIGHT +
-            NavPanelSizes.BOTTOM_PADDING +
-            StationSizes.STATION_HEIGHT / 2);
-    schemeIconSize = size(SchemeSizes.LINE_WIDTH * 2);
-    schemeSelectedHeight =
-        fullHeight - schemeDepartureHeight - schemeleArrivalHeight;
-
-    schemeDeparturePercent = schemeDepartureHeight / fullHeight;
-    schemeArrivalPercent = schemeleArrivalHeight / fullHeight;
-    schemeSelectedPercent = schemeSelectedHeight / fullHeight;
-    schemeIconPercent = schemeIconSize / fullHeight;
-
-    schemeLeftPadding = width(SchemeSizes.LEFT_PADDING);
-    schemeWidth = width(SchemeSizes.SCHEME_WIDTH);
-
-    //rotated by 90 degreees
-    schemeTextWidth = width(SchemeSizes.TEXT_HEIGHT);
-    schemeTextHeight = height(SchemeSizes.TEXT_WIDTH);
-    schemeTextVerticalPadding = height(SchemeSizes.TEXT_VERTICAL_PADDING);
-
-    schemeLineWidth = width(SchemeSizes.LINE_WIDTH);
-    schemeLineLeftPadding = width(SchemeSizes.LINE_LEFT_PADDING);
-    schemeLineRightPadding = width(SchemeSizes.LINE_RIGHT_PADDING);
+    regularTrain = RegularTrainCardSizes.fromData(
+        data: data, height: height, width: width);
+    selectedTrain = SelectedTrainCardSizes.fromData(
+        data: data, height: height, width: width);
+    scheme = SchemeSizes.fromData(
+        contextPadding: contextPadding,
+        data: data,
+        fullHeight: fullHeight,
+        height: height,
+        width: width,
+        size: size);
 
     //Station Sizes
 
-    stationHeight = height(StationSizes.STATION_HEIGHT);
+    stationHeight = height(StationConstants.STATION_HEIGHT);
 
-    stationTextHeight = height(StationSizes.TEXT_HEIGHT);
-    stationTextWidth = width(StationSizes.TEXT_WIDTH);
+    stationTextHeight = height(StationConstants.TEXT_HEIGHT);
+    stationTextWidth = width(StationConstants.TEXT_WIDTH);
 
-    stationRoundIconSize = size(StationSizes.ROUND_ICON_WIDTH);
-    stationRectIconHeight = height(StationSizes.WIDE_ICON_HEIGHT);
-    stationRectIconWidth = width(StationSizes.WIDE_ICON_WIDTH);
+    stationRoundIconSize = size(StationConstants.ROUND_ICON_WIDTH);
+    stationRectIconHeight = height(StationConstants.WIDE_ICON_HEIGHT);
+    stationRectIconWidth = width(StationConstants.WIDE_ICON_WIDTH);
 
-    stationIconTextHeight = height(StationSizes.ICON_TEXT_HEIGHT);
-    stationIconTextWidth = width(StationSizes.ICON_TEXT_WIDTH);
+    stationIconTextHeight = height(StationConstants.ICON_TEXT_HEIGHT);
+    stationIconTextWidth = width(StationConstants.ICON_TEXT_WIDTH);
 
-    stationIconTextPadding = width(StationSizes.SMALL_PADDING);
-    stationTextPadding = height(StationSizes.BIG_PADDING);
+    stationIconTextPadding = width(StationConstants.SMALL_PADDING);
+    stationTextPadding = height(StationConstants.BIG_PADDING);
 
     //Time Sizes
 
-    timeHeight = height(TimeSizes.TIME_HEIGHT);
-    timeLabelTextWidth = width(TimeSizes.LABEL_TEXT_WIDTH);
-    timeTextWidth = width(TimeSizes.TIME_TEXT_WIDTH);
-    timeLeftTextWidth = width(TimeSizes.TIME_LEFT_TEXT_WIDTH);
+    timeHeight = height(TimeConstants.TIME_HEIGHT);
+    timeLabelTextWidth = width(TimeConstants.LABEL_TEXT_WIDTH);
+    timeTextWidth = width(TimeConstants.TIME_TEXT_WIDTH);
+    timeLeftTextWidth = width(TimeConstants.TIME_LEFT_TEXT_WIDTH);
 
     //Schedule Sizes
 
-    scheduleLeftPadding = width(MainScreenSizes.LEFT_PADDING);
+    scheduleLeftPadding = width(MainScreenConstants.LEFT_PADDING);
     scheduleTopPadding =
-        contextPadding.top + height(MainScreenSizes.TOP_PADDING);
+        contextPadding.top + height(MainScreenConstants.TOP_PADDING);
     scheduleRightPadding =
-        contextPadding.right + width(MainScreenSizes.RIGHT_PADDING);
+        contextPadding.right + width(MainScreenConstants.RIGHT_PADDING);
     scheduleBottomPadding = contextPadding.bottom +
-        height(NavPanelSizes.PANEL_HEIGHT + MainScreenSizes.BOTTOM_PADDING);
+        height(NavPanelConstants.PANEL_HEIGHT +
+            MainScreenConstants.BOTTOM_PADDING);
 
     scheduleSpace = (fullHeight -
             scheduleTopPadding -
@@ -266,14 +284,15 @@ class Sizes {
 
     //Nav Panel Sizes
 
-    navPanelHeight = height(NavPanelSizes.PANEL_HEIGHT);
-    navPanelIconSize = size(NavPanelSizes.ICON_SIZE);
-    navPanelInnerHorizontalPadding = width(NavPanelSizes.HORIZONTAL_PADDING);
-    navPanelInnerBottomPadding = height(NavPanelSizes.BOTTOM_PADDING);
-    navPanelInnerTopPadding = height(NavPanelSizes.TOP_PADDING);
+    navPanelHeight = height(NavPanelConstants.PANEL_HEIGHT);
+    navPanelIconSize = size(NavPanelConstants.ICON_SIZE);
+    navPanelInnerHorizontalPadding =
+        width(NavPanelConstants.HORIZONTAL_PADDING);
+    navPanelInnerBottomPadding = height(NavPanelConstants.BOTTOM_PADDING);
+    navPanelInnerTopPadding = height(NavPanelConstants.TOP_PADDING);
     navPanelOuterHorizontalPadding =
-        width(NavPanelSizes.OUTER_HORIZONTAL_PADDING);
-    navPanelOuterBottomadding = width(NavPanelSizes.OUTER_BOTTOM_PADDING);
+        width(NavPanelConstants.OUTER_HORIZONTAL_PADDING);
+    navPanelOuterBottomadding = width(NavPanelConstants.OUTER_BOTTOM_PADDING);
   }
 }
 

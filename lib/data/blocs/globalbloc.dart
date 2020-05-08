@@ -22,8 +22,12 @@ class GlobalBloc extends InheritedWidget {
   final status = BehaviorSubject.seeded(Status.notFound);
 
   GlobalBloc({@required Widget child}) : super(child: child) {
+    stationsBloc.allStations.listen((allStations) {
+      searchBloc.allStationsInput.add(allStations);
+    });
+
     trainsBloc.scheduleDataOutputStream.listen((newData) {
-      scheduleBloc.scheduleDataInputStream.add(newData);
+      scheduleBloc.trainsDataInput.add(newData);
     });
 
     suggestionsBloc.updateCallback(newCallback: (newStation) {
@@ -34,31 +38,36 @@ class GlobalBloc extends InheritedWidget {
     searchBloc.statusOutputStream.mergeWith(
         [trainsBloc.statusOutputStream]).listen((value) => status.add(value));
 
-    searchBloc.dateTime
-        .listen((value) => trainsBloc.dateTimeInputStream.add(value));
+    searchBloc.parametersOuput.listen((parameters) {
+      scheduleBloc.searchParametersInput.add(parameters);
+
+      suggestionsBloc.updateFrom(newCode: parameters.from?.code);
+      suggestionsBloc.updateTo(newCode: parameters.to?.code);
+
+      trainsBloc.dateTimeInputStream.add(parameters.time);
+    });
+
     searchBloc.allTrains
         .listen((value) => trainsBloc.allTrainsInputStream.add(value));
-    searchBloc.fromStation.listen((fromStation) {
-      suggestionsBloc.updateFrom(newCode: fromStation.code);
-    });
-    searchBloc.toStation.listen((toStation) {
-      suggestionsBloc.updateTo(newCode: toStation.code);
-    });
+
     searchBloc.stationType
         .listen((type) => suggestionsBloc.updateType(newType: type));
 
     sizesBloc.outputSizes.listen((newValue) {
-      scheduleBloc.inputSizes.add(newValue);
+      scheduleBloc.sizesInput.add(newValue);
       trainsBloc.inputSizes.add(newValue);
     });
 
     stationsBloc.init().then((_) {
       if (stationsBloc.allStations.value != null &&
           stationsBloc.allStations.value.length > 1) {
-        searchBloc.fromStation.add(stationsBloc.allStations.value.elementAt(0));
-        searchBloc.toStation.add(stationsBloc.allStations.value.elementAt(1));
+        searchBloc.updateStation(stationsBloc.allStations.value.elementAt(0));
+
+        searchBloc.updateStation(stationsBloc.allStations.value.elementAt(1));
+
         suggestionsBloc.updateAllStations(
             newStations: stationsBloc.allStations.value);
+            
         searchBloc.search();
       }
     });

@@ -10,19 +10,63 @@ import 'package:trains/common/helper.dart';
 
 enum Status { searching, found, notFound }
 
+class SearchParameters {
+  Station from;
+  Station to;
+  DateTime time;
+
+  SearchParameters({this.from, this.to, this.time});
+
+  @override
+  String toString() {
+    return "Search: \nFrom " +
+        from.toString() +
+        "\nTo " +
+        to.toString() +
+        "\nAt " +
+        time.toString();
+  }
+}
+
 class SearchBloc {
   SearchBloc() {
     renewTimer();
+    updateTime(DateTime.now());
   }
 
-  final allStationsInputStream = BehaviorSubject<List<Station>>();
+  updateTime(DateTime time) {
+    final oldParameters = parametersOuput.value;
 
-  final fromStation = BehaviorSubject<Station>();
-  final toStation = BehaviorSubject<Station>();
+    final newParameters = SearchParameters(
+        from: oldParameters.from, to: oldParameters.to, time: time);
+
+    parametersOuput.add(newParameters);
+  }
+
+  updateFrom(Station station) {
+    final oldParameters = parametersOuput.value;
+
+    final newParameters = SearchParameters(
+        from: station, to: oldParameters.to, time: oldParameters.time);
+
+    parametersOuput.add(newParameters);
+  }
+
+  updateTo(Station station) {
+    final oldParameters = parametersOuput.value;
+
+    final newParameters = SearchParameters(
+        from: oldParameters.from, to: station, time: oldParameters.time);
+
+    parametersOuput.add(newParameters);
+  }
+
+  final parametersOuput = BehaviorSubject.seeded(SearchParameters());
+
+  final allStationsInput = BehaviorSubject<List<Station>>();
 
   final stationType = BehaviorSubject.seeded(QueryType.departure);
 
-  final dateTime = BehaviorSubject.seeded(DateTime.now());
   final allTrains = BehaviorSubject.seeded(List<Train>());
 
   final statusOutputStream = BehaviorSubject.seeded(Status.notFound);
@@ -33,9 +77,10 @@ class SearchBloc {
     _periodicTimer?.cancel();
     final secondsLeft = 61 - DateTime.now().second;
     Future.delayed(Duration(seconds: secondsLeft), () {
-      dateTime.add(DateTime.now());
+      updateTime(DateTime.now());
+
       _periodicTimer = Timer.periodic(Duration(minutes: 1), (_) {
-        dateTime.add(DateTime.now());
+        updateTime(DateTime.now());
       });
     });
   }
@@ -47,77 +92,100 @@ class SearchBloc {
       DateFormat('dd-MM').format(date.toLocal());
 
   Future<void> search() async {
-    final list = List<Train>();
-    statusOutputStream.add(Status.searching);
-    final scheduleRef = Firestore.instance
-        .collection("schedule")
-        .document(folderNameFromDate(dateTime.value))
-        .collection("queriesOfTheDate")
-        .document(fromStation.value.code + '-' + toStation.value.code);
-    final doc = await scheduleRef.get();
-    if (doc.exists) {
-      print("Document found in Firestore");
-      doc.data['trains'].forEach((train) => list.add(Train.fromDynamic(train)));
-      allTrains.add(list);
-    } else {
-      print("Document not found in Firestore path: " +
-          scheduleRef.path +
-          ".\nMaking a request with URL:");
-      var _url =
-          'https://us-central1-trains-3a75a.cloudfunctions.net/get_trains?to=${toStation.value.code}' +
-              '&from=${fromStation.value.code}&date=${formatDate(dateTime.value)}';
-      print(_url);
-      try {
-        final response = await http.get(_url);
-        if (response.statusCode == 200 && response.body == "true") {
-          final doc = await scheduleRef.get();
-          if (doc.exists) {
-            print("Document loaded from Firestore");
-            doc.data['trains'].forEach((train) {
-              final newTrain = Train.fromDynamic(train);
-              if (allStationsInputStream.value != null) {
-                newTrain.from = findStation(newTrain.from.title);
-                newTrain.to = findStation(newTrain.to.title);
-              }
-              list.add(newTrain);
-            });
-            allTrains.add(list);
-          } else {
-            print("Document not found again. Error");
-            print("Not Found");
-            statusOutputStream.add(Status.notFound);
+    if (parametersOuput.value.from != null &&
+        parametersOuput.value.to != null &&
+        parametersOuput.value.time != null) {
+      final list = List<Train>();
+      statusOutputStream.add(Status.searching);
+      final scheduleRef = Firestore.instance
+          .collection("schedule")
+          .document(folderNameFromDate(parametersOuput.value.time))
+          .collection("queriesOfTheDate")
+          .document(parametersOuput.value.from.code +
+              '-' +
+              parametersOuput.value.to.code);
+      final doc = await scheduleRef.get();
+      if (doc.exists) {
+        print("Document found in Firestore");
+        doc.data['trains'].forEach((train) {
+          final newTrain = Train.fromDynamic(train);
+          if (allStationsInput.value != null &&
+              allStationsInput.value.isNotEmpty) {
+            newTrain.from = findStation(newTrain.from.title);
+            newTrain.to = findStation(newTrain.to.title);
           }
+          list.add(newTrain);
+        });
+        allTrains.add(list);
+      } else {
+        print("Document not found in Firestore path: " +
+            scheduleRef.path +
+            ".\nMaking a request with URL:");
+        var _url =
+            'https://us-central1-trains-3a75a.cloudfunctions.net/get_trains?to=${parametersOuput.value.to.code}' +
+                '&from=${parametersOuput.value.from.code}&date=${formatDate(parametersOuput.value.time)}';
+        print(_url);
+        try {
+          final response = await http.get(_url);
+          if (response.statusCode == 200 && response.body == "true") {
+            final doc = await scheduleRef.get();
+            if (doc.exists) {
+              print("Document loaded from Firestore");
+              doc.data['trains'].forEach((train) {
+                final newTrain = Train.fromDynamic(train);
+                if (allStationsInput.value != null &&
+                    allStationsInput.value.isNotEmpty) {
+                  newTrain.from = findStation(newTrain.from.title);
+                  newTrain.to = findStation(newTrain.to.title);
+                }
+                list.add(newTrain);
+              });
+              allTrains.add(list);
+            } else {
+              print("Document not found again. Error");
+              print("Not Found");
+              statusOutputStream.add(Status.notFound);
+            }
+          }
+        } catch (error) {
+          print(error);
         }
-      } catch (error) {
-        print(error);
       }
     }
   }
 
   findStation(String title) {
-    return allStationsInputStream.value.firstWhere(
+    return allStationsInput.value.firstWhere(
         (station) => station.title.toLowerCase() == title.toLowerCase());
   }
 
   updateStation(Station station) {
     if (stationType.value == QueryType.departure) {
-      fromStation.add(station);
+      updateFrom(station);
+
       stationType.sink.add(QueryType.arrival);
     } else if (stationType.value == QueryType.arrival) {
-      toStation.add(station);
+      updateTo(station);
+
       stationType.sink.add(QueryType.departure);
     }
     search();
   }
 
   switchInputs() {
-    Station temp = fromStation.value;
-    fromStation.add(toStation.value);
-    toStation.add(temp);
+    final oldParameters = parametersOuput.value;
 
-    if (fromStation.value == null)
+    final newParameters = SearchParameters(
+        from: oldParameters.to,
+        to: oldParameters.from,
+        time: oldParameters.time);
+
+    parametersOuput.add(newParameters);
+
+    if (parametersOuput.value.from == null)
       stationType.sink.add(QueryType.departure);
-    else if (toStation.value == null) stationType.sink.add(QueryType.arrival);
+    else if (parametersOuput.value.to == null)
+      stationType.sink.add(QueryType.arrival);
     search();
   }
 
@@ -133,11 +201,16 @@ class SearchBloc {
   }
 
   dispose() {
-    fromStation.close();
-    toStation.close();
-    dateTime.close();
+    parametersOuput.close();
+
+    // fromStation.close();
+    // toStation.close();
+    // dateTime.close();
+
     stationType.close();
+
     _periodicTimer?.cancel();
-    allStationsInputStream.close();
+
+    allStationsInput.close();
   }
 }

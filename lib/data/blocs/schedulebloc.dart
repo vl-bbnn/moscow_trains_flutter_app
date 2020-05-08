@@ -1,134 +1,170 @@
+import 'package:intl/intl.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:trains/common/helper.dart';
+import 'package:trains/data/blocs/searchbloc.dart';
 import 'package:trains/data/blocs/sizesbloc.dart';
 import 'package:trains/data/blocs/trainsbloc.dart';
 import 'package:trains/data/classes/station.dart';
 import 'package:trains/data/classes/train.dart';
 
+class ScheduleData {
+  DateTime time;
+  DateTime targetTime;
+  int minutesDiff;
+
+  Station station;
+  bool selected;
+
+  ScheduleData({this.time, this.station, this.selected, this.targetTime}) {
+    minutesDiff = Helper.timeDiffInMins(targetTime, time);
+  }
+
+  updateTargetTime(DateTime newTargetTime) {
+    targetTime = newTargetTime;
+    minutesDiff = Helper.timeDiffInMins(newTargetTime, time);
+  }
+
+  @override
+  String toString() {
+    return "\nTime: " +
+        DateFormat("HH:mm").format(time) +
+        "\nMinutes: " +
+        minutesDiff.toString() +
+        "\nStation: " +
+        station.toString() +
+        "\nSelected: " +
+        selected.toString();
+  }
+}
+
+class Schedule {
+  TrainClass trainClass;
+  double trainValue;
+  double roadValue;
+  double iconValue;
+
+  ScheduleData departure;
+  ScheduleData arrival;
+
+  Station from;
+  Station to;
+
+  Schedule(
+      {this.trainClass,
+      this.departure,
+      this.arrival,
+      this.trainValue,
+      this.roadValue,
+      this.iconValue,
+      this.from,
+      this.to});
+
+  @override
+  String toString() {
+    return ("Schedule: \nClass: " +
+        trainClass.toString() +
+        "\nTrain: " +
+        trainValue.toString() +
+        "\nRoad: " +
+        roadValue.toString() +
+        "\nIcon: " +
+        iconValue.toString() +
+        "\n\nFrom: " +
+        from.toString() +
+        "\n\nTo: " +
+        to.toString() +
+        "\n\nDeparture: " +
+        departure.toString() +
+        "\n\nArrival: " +
+        arrival.toString());
+  }
+}
+
 class ScheduleBloc {
-  final collapseToValue = 0.5;
+  final sizesInput = BehaviorSubject<Sizes>();
+  final searchParametersInput = BehaviorSubject<SearchParameters>();
+  final trainsDataInput = BehaviorSubject<TrainsData>();
 
-  final scheduleDataInputStream = BehaviorSubject<ScheduleData>();
-
-  final departureValue = BehaviorSubject<double>();
-  final departureSelected = BehaviorSubject<bool>();
-  final departureStation = BehaviorSubject<Station>();
-  final departureIconValue = BehaviorSubject<double>();
-  final departureTime = BehaviorSubject<DateTime>();
-
-  final arrivalValue = BehaviorSubject<double>();
-  final arrivalSelected = BehaviorSubject<bool>();
-  final arrivalStation = BehaviorSubject<Station>();
-  final arrivalIconValue = BehaviorSubject<double>();
-  final arrivalTime = BehaviorSubject<DateTime>();
-
-  final selectedValue = BehaviorSubject<double>();
-
-  final trainClass = BehaviorSubject<TrainClass>();
-
-  final inputSizes = BehaviorSubject<Sizes>();
+  final scheduleOutput = BehaviorSubject<Schedule>();
 
   ScheduleBloc() {
-    scheduleDataInputStream.listen((newData) {
-      final sizes = inputSizes.value;
+    searchParametersInput.listen((parameters) {
+      if (scheduleOutput.value != null) {
+        final schedule = scheduleOutput.value;
+        schedule.departure.updateTargetTime(parameters.time);
+        schedule.arrival.updateTargetTime(parameters.time);
+        schedule.from = parameters.from;
+        schedule.to = parameters.to;
+        scheduleOutput.add(schedule);
+      }
+    });
+    trainsDataInput.listen((newData) {
+      final scheme = sizesInput.value?.scheme;
       final collapseValue = newData.collapseValue;
       final moveValue = newData.moveValue;
       final expandValue = newData.expandValue;
       final currentTrain = newData.currentTrain;
       final nextTrain = newData.nextTrain;
+      final targetTime = searchParametersInput.value.time;
+      final fromStation = searchParametersInput.value.from;
+      final toStation = searchParametersInput.value.to;
 
-      if (sizes != null && nextTrain != null && expandValue > 0) {
-        trainClass.add(nextTrain.trainClass);
+      TrainClass trainClass;
+      double trainValue;
+      double iconValue;
+      double roadValue;
 
-        if (!nextTrain.departureSelected) {
-          departureValue.add(
-              expandValue.clamp(0.0, sizes.schemeDeparturePercent) /
-                  sizes.schemeDeparturePercent);
-          departureStation.add(nextTrain.from);
-        }
+      DateTime departureTime;
+      Station departureStation;
+      bool departureSelected;
 
-        departureIconValue.add((expandValue -
-                    sizes.schemeDeparturePercent +
-                    sizes.schemeIconPercent / 2)
-                .clamp(0.0, sizes.schemeIconPercent) /
-            sizes.schemeIconPercent);
-        departureSelected.add(nextTrain.departureSelected);
+      DateTime arrivalTime;
+      Station arrivalStation;
+      bool arrivalSelected;
 
-        selectedValue.add((expandValue - sizes.schemeDeparturePercent)
-                .clamp(0.0, sizes.schemeSelectedPercent) /
-            sizes.schemeSelectedPercent);
+      if (scheme != null && nextTrain != null && expandValue > 0) {
+        trainValue =
+            expandValue.clamp(0.0, scheme.trainPercent) / scheme.trainPercent;
 
-        arrivalIconValue.add((expandValue -
-                    sizes.schemeDeparturePercent -
-                    sizes.schemeSelectedPercent +
-                    sizes.schemeIconPercent / 2)
-                .clamp(0.0, sizes.schemeIconPercent) /
-            sizes.schemeIconPercent);
-        arrivalSelected.add(nextTrain.arrivalSelected);
+        iconValue = (expandValue - scheme.trainPercent + scheme.iconPercent / 2)
+                .clamp(0.0, scheme.iconPercent) /
+            scheme.iconPercent;
 
-        if (!nextTrain.arrivalSelected) {
-          arrivalValue.add((expandValue -
-                      sizes.schemeSelectedPercent -
-                      sizes.schemeDeparturePercent)
-                  .clamp(0.0, sizes.schemeArrivalPercent) /
-              sizes.schemeArrivalPercent);
-          arrivalStation.add(nextTrain.to);
-        }
-      } else if (sizes != null &&
-          currentTrain != null &&
-          collapseToValue >= 0) {
-        trainClass.add(currentTrain.trainClass);
+        roadValue =
+            (expandValue - scheme.trainPercent).clamp(0.0, scheme.roadPercent) /
+                scheme.roadPercent;
 
-        if (!currentTrain.arrivalSelected) {
-          arrivalValue.add(1 -
-              (collapseValue.clamp(0.0, sizes.schemeArrivalPercent) /
-                  sizes.schemeArrivalPercent));
-          if (arrivalStation.value == null ||
-              arrivalStation.value.code != currentTrain.to.code)
-            arrivalStation.add(currentTrain.to);
-        }
+        trainClass = nextTrain.trainClass;
 
-        arrivalIconValue.add(1 -
-            ((collapseValue -
-                        sizes.schemeArrivalPercent +
-                        sizes.schemeIconPercent / 2)
-                    .clamp(0.0, sizes.schemeIconPercent) /
-                sizes.schemeIconPercent));
-        if (arrivalSelected.value == null ||
-            arrivalSelected.value != currentTrain.arrivalSelected)
-          arrivalSelected.add(currentTrain.arrivalSelected);
+        departureSelected = nextTrain.departureSelected;
+        arrivalSelected = nextTrain.arrivalSelected;
 
-        selectedValue.add(1 -
-            ((collapseValue - sizes.schemeArrivalPercent)
-                    .clamp(0.0, sizes.schemeSelectedPercent) /
-                sizes.schemeSelectedPercent));
+        departureStation = nextTrain.from;
+        arrivalStation = nextTrain.to;
+      } else if (scheme != null && currentTrain != null && collapseValue >= 0) {
+        roadValue = 1 -
+            collapseValue.clamp(0.0, scheme.roadPercent) / scheme.roadPercent;
 
-        departureIconValue.add(1 -
-            ((collapseValue -
-                        sizes.schemeArrivalPercent -
-                        sizes.schemeSelectedPercent +
-                        sizes.schemeIconPercent / 2)
-                    .clamp(0.0, sizes.schemeIconPercent) /
-                sizes.schemeIconPercent));
-        if (departureSelected.value == null ||
-            departureSelected.value != currentTrain.departureSelected)
-          departureSelected.add(currentTrain.departureSelected);
+        iconValue = 1 -
+            (collapseValue - scheme.roadPercent + scheme.iconPercent / 2)
+                    .clamp(0.0, scheme.iconPercent) /
+                scheme.iconPercent;
 
-        if (!currentTrain.departureSelected) {
-          departureValue.add(1 -
-              ((collapseValue -
-                          sizes.schemeSelectedPercent -
-                          sizes.schemeArrivalPercent)
-                      .clamp(0.0, sizes.schemeDeparturePercent) /
-                  sizes.schemeDeparturePercent));
+        trainValue = 1 -
+            (collapseValue - scheme.roadPercent)
+                    .clamp(0.0, scheme.trainPercent) /
+                scheme.trainPercent;
 
-          if (departureStation.value == null ||
-              departureStation.value.code != currentTrain.from.code)
-            departureStation.add(currentTrain.from);
-        }
+        trainClass = currentTrain.trainClass;
+
+        departureSelected = currentTrain.departureSelected;
+        arrivalSelected = currentTrain.arrivalSelected;
+
+        departureStation = currentTrain.from;
+        arrivalStation = currentTrain.to;
       }
 
-      if (sizes != null && currentTrain != null && moveValue >= 0) {
+      if (scheme != null && currentTrain != null && moveValue >= 0) {
         if (nextTrain != null) {
           final isDeparturingLater =
               nextTrain.departure.isAfter(currentTrain.departure);
@@ -139,7 +175,8 @@ class ScheduleBloc {
                   .add(Duration(minutes: (moveValue * departureDiff).round()))
               : currentTrain.departure.subtract(
                   Duration(minutes: (moveValue * departureDiff).round()));
-          departureTime.add(newDeparture);
+
+          departureTime = newDeparture;
 
           final isArrivingLater =
               nextTrain.arrival.isAfter(currentTrain.arrival);
@@ -150,34 +187,48 @@ class ScheduleBloc {
                   .add(Duration(minutes: (moveValue * arrivalDiff).round()))
               : currentTrain.arrival.subtract(
                   Duration(minutes: (moveValue * arrivalDiff).round()));
-          arrivalTime.add(newArrival);
+
+          arrivalTime = newArrival;
         } else {
-          departureTime.add(currentTrain.departure);
-          arrivalTime.add(currentTrain.arrival);
+          departureTime = currentTrain.departure;
+
+          arrivalTime = currentTrain.arrival;
         }
       }
+
+      final departure = ScheduleData(
+          selected: departureSelected,
+          station: departureStation,
+          time: departureTime,
+          targetTime: targetTime);
+
+      final arrival = ScheduleData(
+          station: arrivalStation,
+          selected: arrivalSelected,
+          time: arrivalTime,
+          targetTime: targetTime);
+
+      final schedule = Schedule(
+        trainClass: trainClass,
+        trainValue: trainValue,
+        from: fromStation,
+        to: toStation,
+        roadValue: roadValue,
+        iconValue: iconValue,
+        departure: departure,
+        arrival: arrival,
+      );
+
+      scheduleOutput.add(schedule);
     });
   }
 
   close() {
-    scheduleDataInputStream.close();
+    trainsDataInput.close();
+    scheduleOutput.close();
 
-    departureValue.close();
-    departureSelected.close();
-    departureStation.close();
-    departureIconValue.close();
-    departureTime.close();
+    trainsDataInput.close();
 
-    arrivalValue.close();
-    arrivalSelected.close();
-    arrivalStation.close();
-    arrivalIconValue.close();
-    arrivalTime.close();
-
-    selectedValue.close();
-
-    inputSizes.close();
-
-    trainClass.close();
+    sizesInput.close();
   }
 }

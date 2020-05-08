@@ -6,7 +6,7 @@ import 'package:trains/data/classes/train.dart';
 
 enum Selecting { prev, current, next }
 
-class ScheduleData {
+class TrainsData {
   final Train currentTrain;
   final Train nextTrain;
 
@@ -15,7 +15,7 @@ class ScheduleData {
   final double moveValue;
   final double expandValue;
 
-  ScheduleData(
+  TrainsData(
       {this.currentTrain,
       this.nextTrain,
       this.totalValue,
@@ -36,7 +36,7 @@ class TrainsBloc {
   final results = BehaviorSubject.seeded(List<Train>());
 
   final controller = ScrollController();
-  final scheduleDataOutputStream = BehaviorSubject<ScheduleData>();
+  final scheduleDataOutputStream = BehaviorSubject<TrainsData>();
   final statusOutputStream = BehaviorSubject<Status>();
 
   double startOffset = 0.0;
@@ -100,7 +100,7 @@ class TrainsBloc {
               .clamp(0.0, expandPercent) /
           expandPercent;
 
-      final newScheduleData = ScheduleData(
+      final newScheduleData = TrainsData(
           currentTrain: currentTrain,
           nextTrain: nextTrain,
           totalValue: totalValue,
@@ -126,7 +126,6 @@ class TrainsBloc {
       sizes = newSizes;
       trainOffset =
           sizes.regularTrain.cardWidth + 2 * sizes.regularTrain.outerPadding;
-      dragPercent(0.0);
     });
   }
 

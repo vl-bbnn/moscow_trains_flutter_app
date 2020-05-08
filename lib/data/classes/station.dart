@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Station {
-  String code;
-  String title;
-  String subtitle;
-  bool terminal;
+  String code = "";
+  String title = "";
+  String subtitle = "";
+  bool terminal = false;
   final keywords = List<String>();
   final transitList = List<Map<String, Object>>();
   GeoPoint location;
@@ -28,5 +28,19 @@ class Station {
     } catch (err) {
       print("Station parse error: " + err);
     }
+  }
+
+  @override
+  String toString() {
+    return "\n" +
+        code +
+        ". " +
+        title +
+        "\n" +
+        subtitle +
+        "\nTerminal: " +
+        terminal.toString() +
+        "\nTransits: " +
+        transitList.length.toString();
   }
 }

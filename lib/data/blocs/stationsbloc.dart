@@ -15,12 +15,17 @@ class StationsBloc {
         .orderBy("priority")
         .orderBy("order")
         .reference();
+
     final query = await stationsRef.getDocuments();
+
     final tempList = new List<Station>();
+
     query.documents.forEach((doc) {
       tempList.add(Station.fromDocumentSnapshot(doc));
     });
+
     allStations.add(tempList);
+
     print(tempList.length.toString() + " stations loaded");
   }
 }
