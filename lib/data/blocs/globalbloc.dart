@@ -26,7 +26,7 @@ class GlobalBloc extends InheritedWidget {
       searchBloc.allStationsInput.add(allStations);
     });
 
-    trainsBloc.scheduleDataOutputStream.listen((newData) {
+    trainsBloc.scheduleDataOutput.listen((newData) {
       scheduleBloc.trainsDataInput.add(newData);
     });
 
@@ -36,7 +36,7 @@ class GlobalBloc extends InheritedWidget {
     });
 
     searchBloc.statusOutputStream.mergeWith(
-        [trainsBloc.statusOutputStream]).listen((value) => status.add(value));
+        [trainsBloc.statusOutput]).listen((value) => status.add(value));
 
     searchBloc.parametersOuput.listen((parameters) {
       scheduleBloc.searchParametersInput.add(parameters);
@@ -44,7 +44,7 @@ class GlobalBloc extends InheritedWidget {
       suggestionsBloc.updateFrom(newCode: parameters.from?.code);
       suggestionsBloc.updateTo(newCode: parameters.to?.code);
 
-      trainsBloc.dateTimeInputStream.add(parameters.time);
+      trainsBloc.dateTimeInput.add(parameters.time);
     });
 
     searchBloc.allTrains
@@ -67,8 +67,6 @@ class GlobalBloc extends InheritedWidget {
 
         suggestionsBloc.updateAllStations(
             newStations: stationsBloc.allStations.value);
-            
-        searchBloc.search();
       }
     });
   }

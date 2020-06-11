@@ -46,7 +46,8 @@ class SelectedTrainCardSizes {
   double cardWidth;
 
   double verticalPadding;
-  double horizontalPadding;
+  double leftPadding;
+  double rightPadding;
 
   double textHeight;
   double textWidth;
@@ -69,10 +70,8 @@ class SelectedTrainCardSizes {
     cardWidth = width(SelectedTrainConstants.CARD_WIDTH);
 
     verticalPadding = height(SelectedTrainConstants.VERTICAL_PADDING);
-    horizontalPadding = width(SelectedTrainConstants.HORIZONTAL_PADDING);
-
-    textHeight = height(SelectedTrainConstants.TEXT_HEIGHT);
-    textWidth = width(SelectedTrainConstants.TEXT_WIDTH);
+    leftPadding = width(SelectedTrainConstants.LEFT_PADDING);
+    rightPadding = width(SelectedTrainConstants.RIGHT_PADDING);
 
     textPadding = height(SelectedTrainConstants.TEXT_PADDING);
 
@@ -80,6 +79,13 @@ class SelectedTrainCardSizes {
     iconWidth = width(SelectedTrainConstants.ICON_WIDTH);
 
     iconTextPadding = width(SelectedTrainConstants.ICON_TEXT_PADDING);
+
+    textHeight = height(SelectedTrainConstants.TEXT_HEIGHT);
+    textWidth =
+        // cardWidth - leftPadding - rightPadding - iconHeight - iconTextPadding;
+        width(SelectedTrainConstants.TEXT_WIDTH);
+
+    print(textWidth / data.size.width * 375);
   }
 }
 
@@ -98,12 +104,15 @@ class SchemeSizes {
 
   double textWidth;
   double textHeight;
-  double textVerticalPadding;
+  double textTopPadding;
+  double textBottomPadding;
   double textPadding;
 
   double lineWidth;
   double lineLeftPadding;
   double lineRightPadding;
+
+  double leftPaddingToLineCenter;
 
   SchemeSizes.fromData(
       {MediaQueryData data,
@@ -117,10 +126,10 @@ class SchemeSizes {
             StationConstants.STATION_HEIGHT / 2);
 
     arrivalRoadHeight = contextPadding.bottom +
-        height(MainScreenConstants.BOTTOM_PADDING +
-            NavPanelConstants.PANEL_HEIGHT +
-            NavPanelConstants.BOTTOM_PADDING +
+        height(NavPanelConstants.PANEL_HEIGHT +
+            MainScreenConstants.BOTTOM_PADDING +
             StationConstants.STATION_HEIGHT / 2);
+            
     iconSize = size(SchemeConstants.LINE_WIDTH * 2);
 
     trainRoadHeight = fullHeight - departureRoadHeight - arrivalRoadHeight;
@@ -130,16 +139,22 @@ class SchemeSizes {
     iconPercent = iconSize / fullHeight;
 
     leftPadding = width(SchemeConstants.LEFT_PADDING);
+    textPadding = width(SchemeConstants.TEXT_PADDING);
     totalWidth = width(SchemeConstants.SCHEME_WIDTH);
 
     //rotated by 90 degreees
     textWidth = width(SchemeConstants.TEXT_HEIGHT);
     textHeight = height(SchemeConstants.TEXT_WIDTH);
-    textVerticalPadding = height(SchemeConstants.TEXT_VERTICAL_PADDING);
+    textTopPadding = height(SchemeConstants.TEXT_TOP_PADDING);
+    textBottomPadding = height(SchemeConstants.TEXT_BOTTOM_PADDING);
 
     lineWidth = width(SchemeConstants.LINE_WIDTH);
     lineLeftPadding = width(SchemeConstants.LINE_LEFT_PADDING);
     lineRightPadding = width(SchemeConstants.LINE_RIGHT_PADDING);
+
+    leftPaddingToLineCenter =
+        leftPadding + textWidth + textPadding + lineLeftPadding + lineWidth / 2;
+    print(leftPaddingToLineCenter / data.size.width * 375);
   }
 }
 

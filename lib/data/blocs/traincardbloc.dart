@@ -123,7 +123,7 @@ class TrainCardValues {
 
     color = Color.lerp(MyColors.BACK_SE, MyColors.BACK_EL, cardSizeValue)
         .withOpacity(0.5);
-    sigma = 3.0 * (1 + cardSizeValue);
+    sigma = 0.5 * cardSizeValue;
 
     iconAngle = -math.pi / 2 * _iconMoveValue;
     iconFrontWidth = sizes.regularTrain.iconWidth;
@@ -138,9 +138,12 @@ class TrainCardValues {
     final regularPadding = EdgeInsets.symmetric(
         horizontal: sizes.regularTrain.horizontalPadding,
         vertical: sizes.regularTrain.verticalPadding);
-    final selectedPadding = EdgeInsets.symmetric(
-        horizontal: sizes.selectedTrain.horizontalPadding,
-        vertical: sizes.selectedTrain.verticalPadding);
+    final selectedPadding = EdgeInsets.fromLTRB(
+      sizes.selectedTrain.leftPadding,
+      sizes.selectedTrain.verticalPadding,
+      sizes.selectedTrain.rightPadding,
+      sizes.selectedTrain.verticalPadding,
+    );
 
     innerPadding =
         EdgeInsets.lerp(regularPadding, selectedPadding, cardSizeValue);

@@ -26,6 +26,7 @@ class StationCard extends StatelessWidget {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StationDetails(
             transitList: station.transitList,
@@ -34,6 +35,7 @@ class StationCard extends StatelessWidget {
             height: Helper.height(10, size),
           ),
           Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Container(
                 width: size.width * 0.4,

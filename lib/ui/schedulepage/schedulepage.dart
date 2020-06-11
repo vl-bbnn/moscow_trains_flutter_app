@@ -95,14 +95,12 @@ class SchedulePage extends StatelessWidget {
                                 ),
                                 SizedBox(
                                   height: sizes.timeHeight,
-                                  child: Center(
-                                    child: ScheduleTime(
-                                        type: QueryType.arrival,
-                                        status: status,
-                                        time: schedule.arrival.time,
-                                        minutesDiff:
-                                            schedule.arrival.minutesDiff),
-                                  ),
+                                  child: ScheduleTime(
+                                      type: QueryType.arrival,
+                                      status: status,
+                                      time: schedule.arrival.time,
+                                      minutesDiff:
+                                          schedule.arrival.minutesDiff),
                                 ),
                                 SizedBox(
                                   height: sizes.scheduleSpace,
@@ -151,7 +149,7 @@ class SchedulePage extends StatelessWidget {
               //         color: Colors.deepOrangeAccent.withOpacity(0.2),
               //       ),
               //       Container(
-              //         height: sizes.selectedTrainCardHeight,
+              //         height: sizes.selectedTrain.cardHeight,
               //         width: sizes.fullWidth,
               //         color: Colors.limeAccent.withOpacity(0.2),
               //       ),

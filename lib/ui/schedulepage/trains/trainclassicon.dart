@@ -61,12 +61,12 @@ class TrainClassIcon extends StatelessWidget {
         child: Stack(
           children: <Widget>[
             bottomIcon,
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: backSigma, sigmaY: backSigma),
-              child: Container(
-                color: Colors.black.withOpacity(0),
-              ),
-            ),
+            // BackdropFilter(
+            //   filter: ImageFilter.blur(sigmaX: backSigma, sigmaY: backSigma),
+            //   child: Container(
+            //     color: Colors.black.withOpacity(0),
+            //   ),
+            // ),
             Opacity(
               opacity: frontOpacity,
               child: topIcon,

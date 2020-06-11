@@ -53,6 +53,7 @@ class ScheduleTime extends StatelessWidget {
 
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Time(
             time: time,
@@ -60,6 +61,7 @@ class ScheduleTime extends StatelessWidget {
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               SizedBox(
                 width: Helper.width(90, size),

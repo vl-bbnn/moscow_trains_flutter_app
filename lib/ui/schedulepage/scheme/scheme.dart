@@ -29,8 +29,8 @@ class Scheme extends StatelessWidget {
               width: scheme.textWidth,
               child: Padding(
                 padding: EdgeInsets.only(
-                    top: scheme.textVerticalPadding + sizes.topPadding,
-                    bottom: scheme.textVerticalPadding + sizes.bottomPadding),
+                    top: scheme.textTopPadding + sizes.topPadding,
+                    bottom: scheme.textBottomPadding + sizes.bottomPadding),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -53,6 +53,9 @@ class Scheme extends StatelessWidget {
                   ],
                 ),
               )),
+          SizedBox(
+            width: scheme.textPadding,
+          ),
           Stack(
             children: <Widget>[
               SizedBox(

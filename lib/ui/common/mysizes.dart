@@ -15,19 +15,20 @@ class MainScreenConstants {
 }
 
 class SchemeConstants {
-  static const SCHEME_WIDTH = 25.0;
+  static const SCHEME_WIDTH = 20.0;
 
-  static const TEXT_VERTICAL_PADDING = 40.0;
-  static const TEXT_BOTTOM_PADDING = 40.0;
+  static const TEXT_TOP_PADDING = 25.0;
+  static const TEXT_BOTTOM_PADDING = 50.0;
 
-  static const TEXT_HEIGHT = 18.0;
-  static const TEXT_WIDTH = 150.0;
+  static const TEXT_HEIGHT = 16.0;
+  static const TEXT_WIDTH = 80.0;
 
-  static const LEFT_PADDING = 14.0;
+  static const LEFT_PADDING = 30.0;
+  static const TEXT_PADDING = 10.0;
 
-  static const LINE_WIDTH = 10.0;
-  static const LINE_LEFT_PADDING = 5.0;
-  static const LINE_RIGHT_PADDING = 10.0;
+  static const LINE_WIDTH = 8.0;
+  static const LINE_LEFT_PADDING = 4.0;
+  static const LINE_RIGHT_PADDING = 8.0;
 }
 
 class NavPanelConstants {
@@ -100,9 +101,10 @@ class SelectedTrainConstants {
   static const CARD_WIDTH = 197.0;
 
   static const VERTICAL_PADDING = 25.0;
-  static const HORIZONTAL_PADDING = 20.0;
+  static const LEFT_PADDING = 20.0;
+  static const RIGHT_PADDING = 25.0;
 
-  static const TEXT_WIDTH = 115.0;
+  static const TEXT_WIDTH = 108.0;
   static const TEXT_HEIGHT = 16.0;
 
   static const ICON_WIDTH = 24.0;
@@ -110,5 +112,5 @@ class SelectedTrainConstants {
 
   static const TEXT_PADDING = 15.0;
 
-  static const ICON_TEXT_PADDING = 15.0;
+  static const ICON_TEXT_PADDING = 20.0;
 }

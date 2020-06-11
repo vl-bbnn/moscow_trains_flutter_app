@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/blocs/searchbloc.dart';
@@ -22,10 +24,26 @@ class TrainsData {
       this.collapseValue,
       this.moveValue,
       this.expandValue});
+
+  @override
+  String toString() {
+    return "\n\nTrains: " +
+        currentTrain?.uid?.substring(0, 4) +
+        " - " +
+        nextTrain?.uid?.substring(0, 4) +
+        "\nValues: t" +
+        ((totalValue * 1000).floor() / 1000).toString() +
+        " - c" +
+        ((collapseValue * 1000).floor() / 1000).toString() +
+        " - m" +
+        ((moveValue * 1000).floor() / 1000).toString() +
+        " - e" +
+        ((expandValue * 1000).floor() / 1000).toString();
+  }
 }
 
 class TrainsBloc {
-  final dateTimeInputStream = BehaviorSubject<DateTime>();
+  final dateTimeInput = BehaviorSubject<DateTime>();
   final allTrainsInputStream = BehaviorSubject<List<Train>>();
   final inputSizes = BehaviorSubject<Sizes>();
 
@@ -36,8 +54,8 @@ class TrainsBloc {
   final results = BehaviorSubject.seeded(List<Train>());
 
   final controller = ScrollController();
-  final scheduleDataOutputStream = BehaviorSubject<TrainsData>();
-  final statusOutputStream = BehaviorSubject<Status>();
+  final scheduleDataOutput = BehaviorSubject<TrainsData>();
+  final statusOutput = BehaviorSubject<Status>();
 
   double startOffset = 0.0;
 
@@ -62,7 +80,8 @@ class TrainsBloc {
 
       nextIndex = ((startOffset - trainOffset * delta.sign) / trainOffset)
           .round()
-          .clamp(0, results.value.length - 1);
+          .clamp(max(0, currentIndex - 1),
+              min(currentIndex + 1, results.value.length - 1));
 
       final endOffset = nextIndex * trainOffset;
 
@@ -108,16 +127,23 @@ class TrainsBloc {
           moveValue: moveValue,
           expandValue: expandValue);
 
-      scheduleDataOutputStream.add(newScheduleData);
+      scheduleDataOutput.add(newScheduleData);
     }
   }
 
   TrainsBloc() {
     allTrainsInputStream.listen((newTrains) {
-      if (newTrains.isNotEmpty) _trimTrains(newTrains);
+      if (newTrains.isNotEmpty) {
+        trains = newTrains;
+
+        statusOutput.add(Status.found);
+
+        results.add(trains);
+      } else
+        statusOutput.add(Status.notFound);
     });
 
-    dateTimeInputStream.listen((newDateTime) {
+    dateTimeInput.listen((newDateTime) {
       if (trains.isNotEmpty && trains.first.departure.isBefore(newDateTime))
         _trimTrains(trains);
     });
@@ -130,7 +156,7 @@ class TrainsBloc {
   }
 
   _trimTrains(List<Train> list) {
-    final dateTime = dateTimeInputStream.value ?? DateTime.now();
+    final dateTime = dateTimeInput.value ?? DateTime.now();
 
     if (list.first.departure.isBefore(dateTime)) {
       final index =
@@ -139,28 +165,20 @@ class TrainsBloc {
       if (index > 0) {
         trains = list.sublist(index);
 
-        statusOutputStream.add(Status.found);
+        statusOutput.add(Status.found);
 
         results.add(trains);
       } else
-        statusOutputStream.add(Status.notFound);
-    } else {
-      trains = list;
-
-      statusOutputStream.add(Status.found);
-
-      results.add(trains);
-
-      dragPercent(0.0);
+        statusOutput.add(Status.notFound);
     }
   }
 
   close() {
     results.close();
-    statusOutputStream.close();
-    dateTimeInputStream.close();
+    statusOutput.close();
+    dateTimeInput.close();
     inputSizes.close();
 
-    scheduleDataOutputStream.close();
+    scheduleDataOutput.close();
   }
 }

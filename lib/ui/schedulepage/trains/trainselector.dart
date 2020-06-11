@@ -21,7 +21,7 @@ class _TrainSelectorState extends State<TrainSelector>
 
   initState() {
     controller =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 400));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     animation = Tween(begin: 0.0, end: 1.0).animate(controller);
     super.initState();
   }
@@ -39,6 +39,9 @@ class _TrainSelectorState extends State<TrainSelector>
     double startPosition = 0.0;
     double percent = 0;
 
+    bool started = false;
+    bool completed = true;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       trainsBloc.dragPercent(0.0);
     });
@@ -49,25 +52,43 @@ class _TrainSelectorState extends State<TrainSelector>
 
     animation.addListener(dragUpdate);
 
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        completed = true;
+      }
+    });
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragDown: (details) {
-        startPosition = details.localPosition.dx;
+        if (completed) {
+          startPosition = details.localPosition.dx;
 
-        trainsBloc.dragStart();
+          trainsBloc.dragStart();
+
+          started = true;
+        }
       },
       onHorizontalDragUpdate: (details) {
-        final delta = (details.globalPosition.dx - startPosition) / 2;
+        if (completed && started) {
+          final delta = (details.globalPosition.dx - startPosition) / 2;
 
-        percent = trainsBloc.dragUpdate(delta);
+          percent = trainsBloc.dragUpdate(delta);
+        }
       },
       onHorizontalDragEnd: (_) {
-        controller.reset();
+        if (completed && started) {
+          completed = false;
 
-        animation =
-            Tween(begin: percent, end: percent.round()).animate(controller);
+          started = false;
 
-        controller.forward();
+          controller.reset();
+
+          animation =
+              Tween(begin: percent, end: percent.round()).animate(controller);
+
+          controller.forward();
+        }
       },
       child: StreamBuilder<List<Train>>(
           stream: trainsBloc.results,
@@ -78,7 +99,10 @@ class _TrainSelectorState extends State<TrainSelector>
 
             return ListView.builder(
                 padding: EdgeInsets.only(
-                    left: 15 + widget.sizes.selectedTrain.outerPadding,
+                    left: widget.sizes.scheme.leftPaddingToLineCenter -
+                        widget.sizes.selectedTrain.leftPadding -
+                        widget.sizes.selectedTrain.iconHeight -
+                        widget.sizes.selectedTrain.outerPadding,
                     right: widget.sizes.selectedTrain.cardWidth),
                 scrollDirection: Axis.horizontal,
                 controller: trainsBloc.controller,
