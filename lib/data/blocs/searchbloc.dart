@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core';
 import 'package:rxdart/rxdart.dart';
 import 'package:trains/data/classes/station.dart';
@@ -88,75 +89,53 @@ class SearchBloc {
   String formatDate(DateTime date) =>
       DateFormat("yyyy-MM-ddTHH:mm").format(date.toLocal());
 
-  String folderNameFromDate(DateTime date) =>
-      DateFormat('dd-MM').format(date.toLocal());
-
   Future<void> search() async {
     if (parametersOuput.value.from != null &&
         parametersOuput.value.to != null &&
         parametersOuput.value.time != null) {
-      final list = List<Train>();
       statusOutputStream.add(Status.searching);
-      final scheduleRef = Firestore.instance
-          .collection("schedule")
-          .document(folderNameFromDate(parametersOuput.value.time))
-          .collection("queriesOfTheDate")
-          .document(parametersOuput.value.from.code +
-              '-' +
-              parametersOuput.value.to.code);
-      final doc = await scheduleRef.get();
-      if (doc.exists) {
-        print("Document found in Firestore");
-        doc.data['trains'].forEach((train) {
-          final newTrain = Train.fromDynamic(train);
-          if (allStationsInput.value != null &&
-              allStationsInput.value.isNotEmpty) {
-            newTrain.from = findStation(newTrain.from.title);
-            newTrain.to = findStation(newTrain.to.title);
-          }
-          list.add(newTrain);
-        });
-        allTrains.add(list);
-      } else {
-        print("Document not found in Firestore path: " +
-            scheduleRef.path +
-            ".\nMaking a request with URL:");
-        var _url =
-            'https://us-central1-trains-3a75a.cloudfunctions.net/get_trains?to=${parametersOuput.value.to.code}' +
-                '&from=${parametersOuput.value.from.code}&date=${formatDate(parametersOuput.value.time)}';
-        print(_url);
-        try {
-          final response = await http.get(_url);
-          if (response.statusCode == 200 && response.body == "true") {
-            final doc = await scheduleRef.get();
-            if (doc.exists) {
-              print("Document loaded from Firestore");
-              doc.data['trains'].forEach((train) {
-                final newTrain = Train.fromDynamic(train);
-                if (allStationsInput.value != null &&
-                    allStationsInput.value.isNotEmpty) {
-                  newTrain.from = findStation(newTrain.from.title);
-                  newTrain.to = findStation(newTrain.to.title);
-                }
-                list.add(newTrain);
-              });
-              allTrains.add(list);
-            } else {
-              print("Document not found again. Error");
-              print("Not Found");
-              statusOutputStream.add(Status.notFound);
-            }
-          }
-        } catch (error) {
-          print(error);
-        }
-      }
-    }
-  }
 
-  findStation(String title) {
-    return allStationsInput.value.firstWhere(
-        (station) => station.title.toLowerCase() == title.toLowerCase());
+      final _url =
+          'https://us-central1-trains-3a75a.cloudfunctions.net/get_trains?to=${parametersOuput.value.to.code}' +
+              '&from=${parametersOuput.value.from.code}&date=${formatDate(parametersOuput.value.time)}';
+
+      print("Making a request with URL:" + _url);
+
+      // try {
+      final response = await http.get(_url);
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final scheduleRef = Firestore.instance.document(body['doc']);
+
+        print("Loading doc at: " + scheduleRef.path);
+
+        final doc = await scheduleRef.get();
+
+        if (doc.exists) {
+          print("Document loaded from Firestore: ");
+          int count = 0;
+
+          allTrains.add((doc.data['trains'] as List<dynamic>).map((train) {
+            if (count < 1) {
+              Helper.printWrapped("\n\n" + train['to_end'].toString() + "\n\n");
+              count++;
+            }
+            return Train.fromDynamic(train);
+          }).toList());
+        } else {
+          print("Document not found");
+
+          statusOutputStream.add(Status.notFound);
+        }
+      } else {
+        statusOutputStream.add(Status.notFound);
+        print("response: " + response.body);
+      }
+      // } catch (error) {
+      //   print(error);
+      // }
+    }
   }
 
   updateStation(Station station) {

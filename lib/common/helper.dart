@@ -158,4 +158,9 @@ class Helper {
     // print("Width: " + value.toString() + " -> " + newWidth.toString());
     return newWidth;
   }
+
+  static printWrapped(String text) {
+    final pattern = RegExp('.{1,800}'); // 800 is the size of each chunk
+    pattern.allMatches(text).forEach((match) => print(match.group(0)));
+  }
 }

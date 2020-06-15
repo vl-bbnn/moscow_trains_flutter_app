@@ -21,7 +21,7 @@ class StationsBloc {
     final tempList = new List<Station>();
 
     query.documents.forEach((doc) {
-      tempList.add(Station.fromDocumentSnapshot(doc));
+      tempList.add(Station.fromDocument(doc));
     });
 
     allStations.add(tempList);

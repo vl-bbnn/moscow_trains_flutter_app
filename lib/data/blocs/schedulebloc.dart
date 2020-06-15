@@ -116,11 +116,11 @@ class ScheduleBloc {
 
       DateTime departureTime;
       Station departureStation;
-      bool departureSelected;
+      bool fromStart;
 
       DateTime arrivalTime;
       Station arrivalStation;
-      bool arrivalSelected;
+      bool toEnd;
 
       if (scheme != null && nextTrain != null && expandValue > 0) {
         trainValue =
@@ -136,11 +136,11 @@ class ScheduleBloc {
 
         trainClass = nextTrain.trainClass;
 
-        departureSelected = nextTrain.departureSelected;
-        arrivalSelected = nextTrain.arrivalSelected;
+        fromStart = nextTrain.fromStart;
+        toEnd = nextTrain.toEnd;
 
-        departureStation = nextTrain.from;
-        arrivalStation = nextTrain.to;
+        departureStation = nextTrain.from.station;
+        arrivalStation = nextTrain.to.station;
       } else if (scheme != null && currentTrain != null && collapseValue >= 0) {
         roadValue = 1 -
             collapseValue.clamp(0.0, scheme.roadPercent) / scheme.roadPercent;
@@ -157,11 +157,11 @@ class ScheduleBloc {
 
         trainClass = currentTrain.trainClass;
 
-        departureSelected = currentTrain.departureSelected;
-        arrivalSelected = currentTrain.arrivalSelected;
+        fromStart = currentTrain.fromStart;
+        toEnd = currentTrain.toEnd;
 
-        departureStation = currentTrain.from;
-        arrivalStation = currentTrain.to;
+        departureStation = currentTrain.from.station;
+        arrivalStation = currentTrain.to.station;
       }
 
       if (scheme != null && currentTrain != null && moveValue >= 0) {
@@ -197,14 +197,14 @@ class ScheduleBloc {
       }
 
       final departure = ScheduleData(
-          selected: departureSelected,
+          selected: fromStart,
           station: departureStation,
           time: departureTime,
           targetTime: targetTime);
 
       final arrival = ScheduleData(
           station: arrivalStation,
-          selected: arrivalSelected,
+          selected: toEnd,
           time: arrivalTime,
           targetTime: targetTime);
 
